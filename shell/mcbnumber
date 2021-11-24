@@ -1,0 +1,15 @@
+#!/bin/bash
+
+
+for i in *tbp*.xyz; do
+    prefix=${i%_*}
+    echo $prefix
+
+    changeAtomNumbers.py *tbp.xyz --auto-mcb
+    changeAtomNumbers.py *_numbered_tbp.xyz --auto-mcb
+
+    mv *numbered_numbered* "$prefix"_tbp.xyz
+    rm *numbered*
+done
+
+

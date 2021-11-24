@@ -1,0 +1,144 @@
+#!/usr/bin/env python3
+
+import os, sys
+from shutil import copy2, copytree
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--gdir', nargs='+')
+args=parser.parse_args()
+
+MASTER_DIR = os.getcwd()
+
+AUTOTEST_DIR = os.path.dirname(os.path.realpath(sys.argv[0]))
+CONFIG_DIR = os.path.join(AUTOTEST_DIR,'config')
+SCRIPTS_DIR = os.path.join(AUTOTEST_DIR, 'scripts')
+
+GEOM_TYPES = ['pi','sm','sp','tbp','ts-om','ts-turn']
+
+MAIN_FOLDERS = [
+    '0_geom-reference',
+    '1_xtb1_optimization',
+    '2_gaussian-xtb_optimization',
+    '3_r2scan3c_sp_inputs'
+    ]
+
+# bash scripts paths
+xyzopt = os.path.join(SCRIPTS_DIR,'xyzopt')
+xyzts = os.path.join(SCRIPTS_DIR,'xyzts')
+xyzinp = os.path.join(SCRIPTS_DIR,'xyzinp')
+logxyz = os.path.join(SCRIPTS_DIR,'logxyz')
+
+def list_xyz_files():
+    xyz_files = list()
+    with os.scandir() as files:
+        for file in files:
+            if file.name.endswith('.xyz'):
+                xyz_files.append(file.name)
+    return xyz_files
+
+def list_ftype(ext):
+    files_list = list()
+    with os.scandir() as files:
+        for file in files:
+            if file.name.endswith(str(ext)):
+                files_list.append(file.name)
+    return files_list
+
+if not os.path.isdir(CONFIG_DIR):
+    print('CONFIG dir not found')
+    exit()
+
+
+
+for calc_folder in args.gdir:
+
+    calc_folder_path = os.path.join(MASTER_DIR,calc_folder)
+
+    for folder in MAIN_FOLDERS:
+        folder_path = os.path.join(os.getcwd(),calc_folder, folder)
+        os.mkdir(folder_path)
+    
+    os.chdir(calc_folder)
+
+    calc_prefix = list_xyz_files()[0].rsplit('_', 1)[0]
+
+    for xyz_file in list_xyz_files():
+        copy2(xyz_file, MAIN_FOLDERS[0])
+        copy2(xyz_file, MAIN_FOLDERS[1])
+    
+    os.chdir(os.path.join(calc_folder_path,MAIN_FOLDERS[1]))
+    
+    for job in list_xyz_files():
+        if not 'ts' in job:
+            print(f"RUNNING: {job}")
+            os.system(f"sendjob -s xtb_641 -j {job} --xtbf -f '-v --opt --gfn 1' > /dev/null")
+
+    copy2(f"{calc_prefix}_tbp.xyz",f"{calc_prefix}_pi-ctr.xyz")
+    os.system(f"sendjob -s xtb_641 -j {calc_prefix}_pi-ctr.xyz --xtbf -f '-v --input {os.path.join(CONFIG_DIR,'pi_ctr')} --opt --gfn 1' > /dev/null")
+    os.remove(f"{calc_prefix}_pi-ctr.xyz")
+    
+
+    copy2(f"{calc_prefix}_pi-ctr/xtbopt.xyz", f"{calc_prefix}_pi-free.xyz")
+    os.system(f"sendjob -s xtb_641 -j {calc_prefix}_pi-free.xyz --xtbf -f '-v --opt --gfn 1' > /dev/null")
+    os.remove(f"{calc_prefix}_pi-free.xyz")
+
+    os.mkdir('RMSDPP')
+    copy2(f"{calc_prefix}_tbp/xtbopt.xyz", 'RMSDPP/tbp.xyz')
+    copy2(f"{calc_prefix}_pi-free/xtbopt.xyz", 'RMSDPP/pi-free.xyz')
+    os.chdir('RMSDPP')
+    print(f"RUNNING: RMSD-PP")
+    os.system(f"sendjob -s xtb_641 -j tbp.xyz -f '-v --path pi-free.xyz --input {os.path.join(CONFIG_DIR,'rmsdpp')} --gfn 1' > /dev/null")
+    os.chdir('../')
+
+    os.mkdir('xtb_results')
+    results_dirs = list()
+    with os.scandir() as folders:
+        for folder in folders:
+            if folder.is_dir() and folder.name.startswith(calc_prefix):
+                results_dirs.append(folder.name)
+
+    for result in results_dirs:
+        copy2(f"{result}/xtbopt.xyz", f"xtb_results/{result}.xyz")
+
+    copy2(f"RMSDPP/xtbpath_ts.xyz", f"xtb_results/{calc_prefix}_ts-om.xyz")
+
+    with os.scandir('xtb_results') as results:
+        for result in results:
+            copy2(result.path,'../2_gaussian-xtb_optimization')
+
+    os.chdir(os.path.join(calc_folder_path,MAIN_FOLDERS[2]))
+
+    for xyz_file in list_xyz_files(): 
+        if xyz_file.endswith('pi-ctr.xyz') or xyz_file.endswith('pi.xyz'):
+            os.remove(xyz_file) 
+
+    for xyz_file in list_xyz_files(): 
+        if "ts" not in xyz_file:
+            os.system(f"{xyzopt} {xyz_file}")
+            os.remove(xyz_file)
+        else:
+            os.system(f"{xyzts} {xyz_file}")
+            os.remove(xyz_file)
+
+    print(f"RUNNING: GAUSSIAN")
+    os.system(f"sendjob -s gaussian_16 -j *.com > /dev/null")
+
+    for log_file in list_ftype('log'):
+        os.system(f"{logxyz} {log_file} 1> /dev/null")
+
+    with os.scandir() as results:
+        for result in results:
+            if result.name in list_xyz_files():
+                copy2(result.path,'../3_r2scan3c_sp_inputs')
+
+    os.chdir(os.path.join(calc_folder_path,MAIN_FOLDERS[3]))
+    
+
+    for xyz_file in list_xyz_files(): 
+        os.system(f"{xyzinp} {xyz_file}")
+        os.remove(xyz_file)
+
+    os.chdir(calc_folder_path)
+
+    os.chdir(MASTER_DIR)

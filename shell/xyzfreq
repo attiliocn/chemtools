@@ -1,0 +1,17 @@
+#!/bin/bash
+
+files=$@
+
+for file in $files
+do
+	file_basename=${file%.*}
+        echo %chk="$file_basename".chk > $file_basename.com
+	echo "# freq external='xtb-gaussian --gfn 1'" >> $file_basename.com
+	echo "" >> $file_basename.com
+	echo $file_basename >> $file_basename.com
+	echo "" >> $file_basename.com
+	echo "0 1" >> $file_basename.com
+	tail -n +3 $file >> $file_basename.com
+	echo "" >> $file_basename.com
+	echo "" >> $file_basename.com
+done

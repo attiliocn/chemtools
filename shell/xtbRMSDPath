@@ -1,0 +1,15 @@
+#!/bin/sh
+
+dataPoints=$(grep energy xtbpath.xyz | awk '{print $2}')
+outputFile='path.csv'
+
+echo 'opt_step,rel_energy' > $outputFile
+
+counter=1
+for i in $dataPoints
+do
+
+    echo "$counter,$i" >> $outputFile
+    counter=$(($counter+1))
+
+done

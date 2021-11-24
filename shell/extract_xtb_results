@@ -1,0 +1,18 @@
+#!/bin/bash
+
+if test -e extracted_results; then
+    echo 'WARNING: Impossible to extract the results. The results_extracted folder already exists!'
+    exit
+else
+    mkdir results_extracted
+fi
+
+for i in $(ls -d */); do
+    i=${i/\//}
+   
+    if test -f "$i"/xtbopt.log; then
+        cp "$i"/xtbopt.xyz results_extracted/"$i".xyz
+    fi  
+done
+
+echo 'Done!'

@@ -1,0 +1,14 @@
+#!/bin/bash
+
+for i in $(ls *.gjf | sort -V); do
+	tr -d '\15\32' < $i > temp
+	mv temp $i
+	coordinatesLine1=$(grep -nE "^\s+" $i | head -n 1 | sed 's/:/\t/'| awk '{print $1}')
+	echo $coordinatesLine1
+	tail -n +"$coordinatesLine1" $i | sed '/^$/d'| sed '${/^ $/d}' > temp
+	cat temp | wc -l > ${i%.*}.xyz
+	echo ${i%.*} >> ${i%.*}.xyz
+	cat temp >> ${i%.*}.xyz
+done
+
+rm temp
