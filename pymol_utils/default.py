@@ -126,15 +126,6 @@ cmd.set("ray_trace_mode", 1)
 cmd.set("ray_texture", 0)
 cmd.set("ray_opaque_background", "off")
 
-cmd.set("ambient", 0.4) #amount of ambient light
-cmd.set("shininess", 25) #how much the object shines <the greater it becames opaque>
-cmd.set("reflect", 0.05) #amount of light reflection
-cmd.set("orthoscopic", 0)
-cmd.set("transparency", 0.5)
-cmd.set("antialias", 3)
-cmd.set("spec_count", 5)
-cmd.set("specular", 1.5)
-
 cmd.set('dash_color', 'gray')
 cmd.set("dash_gap",0.15)
 cmd.set("dash_radius",0.035)
@@ -146,7 +137,15 @@ cmd.set('label_outline_color', 'black')
 cmd.set('label_font_id', 7)
 cmd.set('label_size', 30)
 ###################
-
+def default_env(arg1):
+	cmd.set("ambient", 0.4) #amount of ambient light
+	cmd.set("shininess", 25) #how much the object shines <the greater it becames opaque>
+	cmd.set("reflect", 0.05) #amount of light reflection
+	cmd.set("orthoscopic", 0)
+	cmd.set("transparency", 0.5)
+	cmd.set("antialias", 3)
+	cmd.set("spec_count", 5)
+	cmd.set("specular", 1.5)
 
 def default_colors(arg1):
     util.cbaw(arg1)
@@ -159,24 +158,25 @@ def default_colors(arg1):
     cmd.set('stick_color', 'default', arg1)
     cmd.set('sphere_transparency', 0, arg1)
 
-
 def ball_and_stick(arg1='all'):
     default_colors(arg1)
+    default_env(arg1)
     cmd.show("sticks", arg1)
     cmd.show("spheres", arg1)
     cmd.hide("nonbonded", arg1)
     cmd.hide("lines", arg1)
-    cmd.zoom(arg1)
     cmd.hide("labels")
 
     cmd.set("stick_radius",0.2, arg1)
     cmd.set("stick_h_scale",1.0, arg1) 
-
     cmd.set("sphere_scale",0.25, arg1)
+    cmd.set("sphere_scale",0.25, 'elem H')
 cmd.extend("bns", ball_and_stick)
 
 def houkmol(arg1='all'):
     ball_and_stick(arg1)
+    default_env(arg1)
+    
     cmd.color("gray70", f"elem C and {arg1}")
     cmd.color("red", f"elem O and {arg1}")
     cmd.color("tv_blue", f"elem N and {arg1}")
@@ -184,8 +184,13 @@ def houkmol(arg1='all'):
     cmd.set("stick_color",'black', arg1)
     cmd.set("stick_radius",0.1, arg1)
     cmd.set("stick_h_scale",1.0, arg1) 
-
-    cmd.set("sphere_scale",0.20, arg1)
+    
+    cmd.set('sphere_scale',0.20, arg1)
+    cmd.set('sphere_scale',0.15, f'elem H and {arg1}')
+    
+    cmd.set("shininess", 100)
+    cmd.set("ambient", 0.6)
+    
 cmd.extend("hmol", houkmol)
 
 def quick_overlay(entry, color='blue'):
