@@ -12,6 +12,8 @@ for i in $(ls -d */); do
    
     if test -f "$i"/xtbopt.log; then
         cp "$i"/xtbopt.xyz results_extracted/"$i".xyz
+    elif test -f "$i"/crest_conformers.xyz; then
+        cp "$i"/crest_conformers.xyz results_extracted/"$i"_confs.xyz
     fi  
 done
 
