@@ -1,144 +1,95 @@
 #!/usr/bin/env python3
 
-import os, sys
-from shutil import copy2, copytree
+import sys
+import os
+import re
+from datetime import datetime
+from shutil import copy2, rmtree
 import argparse
+from natsort import natsorted
 
-parser = argparse.ArgumentParser()
-parser.add_argument('--gdir', nargs='+')
-args=parser.parse_args()
+argparser = argparse.ArgumentParser()
+argparser.add_argument('tbp_files', help = 'TBP intermediate .xyz file', nargs='+')
+argparser.add_argument('--cross', help='Require the cycloaddition metathesis TS', action='store_true')
+args = argparser.parse_args()
 
 MASTER_DIR = os.getcwd()
-
 AUTOTEST_DIR = os.path.dirname(os.path.realpath(sys.argv[0]))
 CONFIG_DIR = os.path.join(AUTOTEST_DIR,'config')
 SCRIPTS_DIR = os.path.join(AUTOTEST_DIR, 'scripts')
 
-GEOM_TYPES = ['pi','sm','sp','tbp','ts-om','ts-turn']
+def get_tbp_type(filename):
+    tbp_type = re.search('tbp-[0-9]{1}', filename).group()
+    tbp_type_number = int(tbp_type.replace('tbp-', ''))
+    return tbp_type_number
 
-MAIN_FOLDERS = [
-    '0_geom-reference',
-    '1_xtb1_optimization',
-    '2_gaussian-xtb_optimization',
-    '3_r2scan3c_sp_inputs'
-    ]
+def get_pictr_input(filename, cross=args.cross, config_dir=CONFIG_DIR):
+    group_1 = [1,2]
+    is_group_1 = False
+    tbp_type_number = get_tbp_type(filename)
 
-# bash scripts paths
-xyzopt = os.path.join(SCRIPTS_DIR,'xyzopt')
-xyzts = os.path.join(SCRIPTS_DIR,'xyzts')
-xyzinp = os.path.join(SCRIPTS_DIR,'xyzinp')
-logxyz = os.path.join(SCRIPTS_DIR,'logxyz')
+    if tbp_type_number in group_1 and cross == False:
+        is_group_1 = True
+    elif tbp_type_number not in group_1 and cross == True:
+        is_group_1 = True
 
-def list_xyz_files():
-    xyz_files = list()
-    with os.scandir() as files:
-        for file in files:
-            if file.name.endswith('.xyz'):
-                xyz_files.append(file.name)
-    return xyz_files
-
-def list_ftype(ext):
-    files_list = list()
-    with os.scandir() as files:
-        for file in files:
-            if file.name.endswith(str(ext)):
-                files_list.append(file.name)
-    return files_list
-
-if not os.path.isdir(CONFIG_DIR):
-    print('CONFIG dir not found')
-    exit()
-
-
-
-for calc_folder in args.gdir:
-
-    calc_folder_path = os.path.join(MASTER_DIR,calc_folder)
-
-    for folder in MAIN_FOLDERS:
-        folder_path = os.path.join(os.getcwd(),calc_folder, folder)
-        os.mkdir(folder_path)
+    if is_group_1 == True:
+        input_file = os.path.join(config_dir, 'input_pi-ctr_mcb-type-1-or-2')
+    elif is_group_1 == False:
+        input_file = os.path.join(config_dir, 'input_pi-ctr_mcb-type-3-or-4')
     
-    os.chdir(calc_folder)
+    return input_file
 
-    calc_prefix = list_xyz_files()[0].rsplit('_', 1)[0]
+starting_time = datetime.now()
+tbp_files = natsorted(args.tbp_files)
+log_file = open('log.txt', mode='w')
 
-    for xyz_file in list_xyz_files():
-        copy2(xyz_file, MAIN_FOLDERS[0])
-        copy2(xyz_file, MAIN_FOLDERS[1])
-    
-    os.chdir(os.path.join(calc_folder_path,MAIN_FOLDERS[1]))
-    
-    for job in list_xyz_files():
-        if not 'ts' in job:
-            print(f"RUNNING: {job}")
-            os.system(f"sendjob -s xtb_641 -j {job} --xtbf -f '-v --opt --gfn 1' > /dev/null")
+log_file.write('Processing the following files:\n')
+log_file.write('\n'.join(tbp_files)+'\n\n')
 
-    copy2(f"{calc_prefix}_tbp.xyz",f"{calc_prefix}_pi-ctr.xyz")
-    os.system(f"sendjob -s xtb_641 -j {calc_prefix}_pi-ctr.xyz --xtbf -f '-v --input {os.path.join(CONFIG_DIR,'pi_ctr')} --opt --gfn 1' > /dev/null")
-    os.remove(f"{calc_prefix}_pi-ctr.xyz")
-    
+for tbp_file in tbp_files:
+    log_file.write(f'Processing:\t{tbp_file}\n')
 
-    copy2(f"{calc_prefix}_pi-ctr/xtbopt.xyz", f"{calc_prefix}_pi-free.xyz")
-    os.system(f"sendjob -s xtb_641 -j {calc_prefix}_pi-free.xyz --xtbf -f '-v --opt --gfn 1' > /dev/null")
-    os.remove(f"{calc_prefix}_pi-free.xyz")
+    tbp_type_number = get_tbp_type(tbp_file)
+    tbp_file_bn = tbp_file.split('.',1)[0]
 
-    os.mkdir('RMSDPP')
-    copy2(f"{calc_prefix}_tbp/xtbopt.xyz", 'RMSDPP/tbp.xyz')
-    copy2(f"{calc_prefix}_pi-free/xtbopt.xyz", 'RMSDPP/pi-free.xyz')
-    os.chdir('RMSDPP')
-    print(f"RUNNING: RMSD-PP")
-    os.system(f"sendjob -s xtb_641 -j tbp.xyz -f '-v --path pi-free.xyz --input {os.path.join(CONFIG_DIR,'rmsdpp')} --gfn 1' > /dev/null")
-    os.chdir('../')
+    log_file.write(f'This TBP is of type:\t{tbp_type_number}\n')
 
-    os.mkdir('xtb_results')
-    results_dirs = list()
-    with os.scandir() as folders:
-        for folder in folders:
-            if folder.is_dir() and folder.name.startswith(calc_prefix):
-                results_dirs.append(folder.name)
+    try: 
+        os.mkdir(tbp_file_bn)
+    except FileExistsError:
+        rmtree(tbp_file_bn)
+        os.mkdir(tbp_file_bn)
 
-    for result in results_dirs:
-        copy2(f"{result}/xtbopt.xyz", f"xtb_results/{result}.xyz")
+    copy2(tbp_file, f"{tbp_file_bn}/")
 
-    copy2(f"RMSDPP/xtbpath_ts.xyz", f"xtb_results/{calc_prefix}_ts-om.xyz")
+    os.chdir(tbp_file_bn)
 
-    with os.scandir('xtb_results') as results:
-        for result in results:
-            copy2(result.path,'../2_gaussian-xtb_optimization')
+    log_file.write('Running PI_CTR_OPTIMIZATION\n')
+    os.mkdir('1_generate-pictr')
+    copy2(tbp_file, '1_generate-pictr/')
+    os.chdir('1_generate-pictr')
+    pictr_input = get_pictr_input(tbp_file)
+    pictr_file = tbp_file.replace('tbp', 'pictr')
+    os.system(f"xtb {tbp_file} -v --gfn 1 --chrg 0 --uhf 0 --opt --input {pictr_input} > xtb.output")
+    copy2('xtbopt.xyz', pictr_file)
+    os.chdir('..')
 
-    os.chdir(os.path.join(calc_folder_path,MAIN_FOLDERS[2]))
-
-    for xyz_file in list_xyz_files(): 
-        if xyz_file.endswith('pi-ctr.xyz') or xyz_file.endswith('pi.xyz'):
-            os.remove(xyz_file) 
-
-    for xyz_file in list_xyz_files(): 
-        if "ts" not in xyz_file:
-            os.system(f"{xyzopt} {xyz_file}")
-            os.remove(xyz_file)
-        else:
-            os.system(f"{xyzts} {xyz_file}")
-            os.remove(xyz_file)
-
-    print(f"RUNNING: GAUSSIAN")
-    os.system(f"sendjob -s gaussian_16 -j *.com > /dev/null")
-
-    for log_file in list_ftype('log'):
-        os.system(f"{logxyz} {log_file} 1> /dev/null")
-
-    with os.scandir() as results:
-        for result in results:
-            if result.name in list_xyz_files():
-                copy2(result.path,'../3_r2scan3c_sp_inputs')
-
-    os.chdir(os.path.join(calc_folder_path,MAIN_FOLDERS[3]))
-    
-
-    for xyz_file in list_xyz_files(): 
-        os.system(f"{xyzinp} {xyz_file}")
-        os.remove(xyz_file)
-
-    os.chdir(calc_folder_path)
+    log_file.write('Running RMSDPP\n')
+    os.mkdir('2_rmsdpp')
+    copy2(tbp_file, '2_rmsdpp/')
+    copy2(f'1_generate-pictr/{pictr_file}', '2_rmsdpp/')
+    os.chdir('2_rmsdpp')
+    rmsdpp_input = os.path.join(CONFIG_DIR, 'rmsdpp')
+    ts_file = tbp_file.replace('tbp', 'ts')
+    os.system(f"xtb {tbp_file} --path {pictr_file} -v --gfn 1 --chrg 0 --uhf 0 --input {rmsdpp_input} > xtb.output")
+    copy2('xtbpath_ts.xyz', ts_file)
+    os.chdir('..')
 
     os.chdir(MASTER_DIR)
+    log_file.write('\n')
+
+final_time = datetime.now()
+elapsed_time = final_time - starting_time
+log_file.write(f'Elapsed time: {elapsed_time}\n')
+log_file.close()
