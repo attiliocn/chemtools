@@ -17,21 +17,22 @@ do
     echo "" >> $file_basename.com
     echo "--Link1--" >> $file_basename.com
     echo "%chk=dummy.chk" >> $file_basename.com
+    echo "%nosave" >> $file_basename.com
     echo "# freq geom=check external='xtb-gaussian --gfn 1'" >> $file_basename.com
     echo "" >> $file_basename.com
     echo $file_basename >> $file_basename.com
     echo "" >> $file_basename.com
     echo "0 1" >> $file_basename.com
 
-    echo "" >> $file_basename.com
-    echo "--Link1--" >> $file_basename.com
-    echo "%chk=dummy.chk" >> $file_basename.com
-    echo "%nosave" >> $file_basename.com
-    echo "# geom=check external='xtb-gaussian --gfn 1'" >> $file_basename.com
-    echo "" >> $file_basename.com
-    echo $file_basename >> $file_basename.com
-    echo "" >> $file_basename.com
-    echo "0 1" >> $file_basename.com
+   # echo "" >> $file_basename.com
+   # echo "--Link1--" >> $file_basename.com
+   # echo "%chk=dummy.chk" >> $file_basename.com
+   # echo "%nosave" >> $file_basename.com
+   # echo "# geom=check external='xtb-gaussian --gfn 1'" >> $file_basename.com
+   # echo "" >> $file_basename.com
+   # echo $file_basename >> $file_basename.com
+   # echo "" >> $file_basename.com
+   # echo "0 1" >> $file_basename.com
 
     echo "" >> $file_basename.com
     echo "" >> $file_basename.com

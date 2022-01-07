@@ -25,7 +25,7 @@ echo ""
 
 ## SP ##
 #set keywords="#p gfinput $dft/gen pseudo=read nosymm int=ultrafine"
-#set keywords="#p gfinput m06/def2tzvp nosymm int=ultrafine" #quick sp
+set keywords="#p gfinput wb97xd/def2svp nosymm int=ultrafine" #quick sp
 
 
 ## SP + Freq ##
@@ -45,7 +45,7 @@ echo ""
 #set keywords="#p opt=(ts,calcfc,noeigentest, maxstep=5) empiricaldispersion=gd3bj freq=(noraman,HPModes) $dft/gen pseudo=read nosymm int=ultrafine"
 #set keywords="#p opt=(ts,calcfc,noeigentest, maxstep=5) freq=(noraman,HPModes) $dft/gen pseudo=read nosymm int=ultrafine"
 #set keywords="#p opt=(ts,calcfc,noeigentest, maxstep=5) empiricaldispersion=gd3 freq=(noraman,HPModes) $dft/def2svp nosymm int=ultrafine" #quickts
-set keywords="#p opt=(ts,calcfc,noeigentest, maxstep=5) freq=(noraman,HPModes) $dft/def2svp nosymm int=ultrafine" #quickts
+#set keywords="#p opt=(ts,calcfc,noeigentest, maxstep=5) freq=(noraman,HPModes) $dft/def2svp nosymm int=ultrafine" #quickts
 
 ## OptRedundant ##
 #set keywords="#p opt=modredundant empiricaldispersion=gd3bj $dft/gen pseudo=read nosymm int=ultrafine"
