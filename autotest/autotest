@@ -42,7 +42,7 @@ def get_pictr_input(filename, cross=args.cross, config_dir=CONFIG_DIR):
 
 starting_time = datetime.now()
 tbp_files = natsorted(args.tbp_files)
-log_file = open('log.txt', mode='w')
+log_file = open('log.txt', mode='w', buffering=1)
 
 log_file.write('Processing the following files:\n')
 log_file.write('\n'.join(tbp_files)+'\n\n')
