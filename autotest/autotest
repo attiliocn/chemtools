@@ -83,7 +83,10 @@ for tbp_file in tbp_files:
     rmsdpp_input = os.path.join(CONFIG_DIR, 'rmsdpp')
     ts_file = tbp_file.replace('tbp', 'ts')
     os.system(f"xtb {tbp_file} --path {pictr_file} -v --gfn 1 --chrg 0 --uhf 0 --input {rmsdpp_input} > xtb.output 2> /dev/null")
-    copy2('xtbpath_ts.xyz', ts_file)
+
+    if os.path.isfile('xtbpath_ts.xyz'):
+        copy2('xtbpath_ts.xyz', ts_file)
+    
     os.chdir('..')
 
     os.chdir(MASTER_DIR)
