@@ -260,7 +260,21 @@ def nci(arg1, isovalue=0.3):
 	cmd.set('two_sided_lighting',value=1)
 cmd.extend( "nci", nci );
 
+def save_img(filename='default'):
+    '''
+    Export the current workspace as PNG using Ray-Tracing. If filename is not present
+    the image is named default.png, except if only one element is visible in the workspace.
+    In this case the filename is the same as the name of the visible entry.
+    '''
+    visible_entries = cmd.get_object_list(selection='visible')
+    if filename == 'default' and len(visible_entries) == 1:
+        filename = visible_entries[0]
 
+    screen_size = cmd.get_viewport(output=1, quiet=1)
+    canvas_width = screen_size[0]
+    canvas_height = screen_size[1]
+    cmd.png(filename, canvas_width*3, canvas_height*3, dpi=300, ray=1)
+cmd.extend("expimg", save_img)
 
 
 
