@@ -273,6 +273,7 @@ def save_img(filename='default'):
     screen_size = cmd.get_viewport(output=1, quiet=1)
     canvas_width = screen_size[0]
     canvas_height = screen_size[1]
+
     cmd.png(filename, canvas_width*3, canvas_height*3, dpi=300, ray=1)
 cmd.extend("expimg", save_img)
 
