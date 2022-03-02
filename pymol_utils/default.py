@@ -5,6 +5,17 @@
 from pymol import cmd
 from pymol import util
 from pymol import stored
+import re
+
+#Color Maps
+viridis = [
+    [0.992, 0.905, 0.145],
+    [0.368, 0.788, 0.384],
+    [0.129, 0.568, 0.549],
+    [0.231, 0.321, 0.545],
+    [0.266, 0.003, 0.329]
+]
+
 
 # Bondi VDW values 
 cmd.alter("elem Ac", "vdw=2.00")
@@ -251,14 +262,41 @@ cmd.extend("bondbetween", bond_between)
 
 def nci(arg1, isovalue=0.3):
 	# nci.py, a tiny script to display plots from Nciplot in PyMOL
-	densf = arg1+"-dens"
-	gradf = arg1+"-grad"
-	cmd.isosurface("grad",gradf, isovalue)
-	cmd.ramp_new("ramp", densf, [-5,5], "rainbow")
-	cmd.set("surface_color", "ramp", "grad")
-	cmd.set('transparency', 0, 'grad')
-	cmd.set('two_sided_lighting',value=1)
+    densf = arg1+"-dens"
+    gradf = arg1+"-grad"
+    cmd.isosurface("grad",gradf, isovalue)
+    cmd.ramp_new("ramp", densf, [-5,5], 'rainbow')
+    cmd.set("surface_color", "ramp", "grad")
+    cmd.set('transparency', 0, 'grad')
+    cmd.set('two_sided_lighting',value=1)
 cmd.extend( "nci", nci );
+
+def group_visible(groupname='test', include_measurements=False):
+    visible_entries = cmd.get_object_list(selection='visible')
+    if include_measurements:
+        all_objects = cmd.get_names(type='all')
+        for item in all_objects:
+            dist_obj = re.search('dist([0-9]{1,4})', item)
+            if dist_obj:
+                dist_obj_id = dist_obj.group(1)
+                dist_obj_newname = f"{visible_entries[0]}_dista{dist_obj_id}"
+                cmd.set_name(item, dist_obj_newname)
+                visible_entries.append(dist_obj_newname)
+    cmd.group(groupname, ' '.join(visible_entries))
+cmd.extend("group_visible", group_visible);
+
+def print_stuff():
+    visible_entries = cmd.get_names(type='all', enabled_only=1)
+    print(visible_entries)
+cmd.extend("pstuff", print_stuff);
+
+def align_visible(reference_entry_id=0):
+    visible_entries = cmd.get_object_list(selection='visible')
+    reference_entry = visible_entries[reference_entry_id]
+    mobile_entries = [i for i in visible_entries if i != reference_entry]
+    for entry in mobile_entries:
+        cmd.align(entry, reference_entry)
+cmd.extend("align_visible", align_visible);
 
 def save_img(filename='default'):
     '''
