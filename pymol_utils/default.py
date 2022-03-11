@@ -285,6 +285,14 @@ def group_visible(groupname='test', include_measurements=False):
     cmd.group(groupname, ' '.join(visible_entries))
 cmd.extend("group_visible", group_visible);
 
+def show_buried_volume(entry_name, sphere_radius=3.5):
+    cmd.set_name(entry_name, "bv_atoms")
+    cmd.copy(entry_name, "bv_atoms")
+    cmd.alter("sele", f"vdw={sphere_radius}")
+    cmd.set("sphere_scale", 1, "sele")
+    cmd.set("sphere_transparency", 0.50, "sele")
+cmd.extend("bv", show_buried_volume);
+
 def print_stuff():
     visible_entries = cmd.get_names(type='all', enabled_only=1)
     print(visible_entries)
@@ -295,7 +303,7 @@ def align_visible(reference_entry_id=0):
     reference_entry = visible_entries[reference_entry_id]
     mobile_entries = [i for i in visible_entries if i != reference_entry]
     for entry in mobile_entries:
-        cmd.align(entry, reference_entry)
+        cmd.align(entry, reference_entry, cycles=200)
 cmd.extend("align_visible", align_visible);
 
 def save_img(filename='default'):
