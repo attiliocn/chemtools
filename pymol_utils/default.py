@@ -219,7 +219,7 @@ def add_VDW(arg1):
     cmd.hide("nonbonded", arg1+"_vdw")
     cmd.hide("lines", arg1+"_vdw")
     cmd.hide("sticks", arg1+"_vdw")
-    cmd.set("sphere_transparency", 0.6, arg1+"_vdw")
+    cmd.set("sphere_transparency", 0.5, arg1+"_vdw")
 cmd.extend("add_vdw", add_VDW)
 
 
