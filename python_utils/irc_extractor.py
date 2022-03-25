@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import argparse
-from email.policy import default
 import re
 import numpy as np
 import matplotlib.pyplot as plt
@@ -13,11 +12,14 @@ parser_single = subparsers.add_parser('single', help='For single output IRC calc
 parser_single.add_argument('output', type=str, help='Gaussian Output File')
 parser_single.add_argument('product', choices=['rv','fw'], help='Indicate whether the product is in the forward or reverse direction')
 parser_single.add_argument('--downhill', action='store_true', help='Special option for downhill calculations')
+parser_single.add_argument('--brute-force', action='store_true', help='Use manual extraction of irc data')
 
 parser_double = subparsers.add_parser('double', help='For IRC in which forward and reverse were calculated separately')
 parser_double.add_argument('reverse', type=str, help='Gaussian Output File (reverse)')
 parser_double.add_argument('forward', type=str, help='Gaussian Output File (forward)')
 parser_double.add_argument('product', choices=['rv','fw'], help='Indicate whether the product is in the forward or reverse direction')
+parser_double.add_argument('--downhill', action='store_true', help='Special option for downhill calculations')
+parser_double.add_argument('--brute-force', action='store_true', help='Use manual extraction of irc data')
 
 parser_single.add_argument('--title', type=str, default=None, help='Filename and Plot Title')
 parser_double.add_argument('--title', type=str, default=None, help='Filename and Plot Title')
@@ -27,11 +29,13 @@ parser_double.add_argument('--include-title', action='store_true', help='Include
 
 args = parser.parse_args()
 
-def extract_irc_from_output(output_file):
+print(f"Running: {args}\n")
+
+def extract_irc_from_output_brute_force(output_file):
     '''
     This function takes a Gaussian output file and extract the IRC path from it. 
     Returns a 2-column IRC (x= IRC displacement, y= Total energy)
-    '''  
+    ''' 
     irc_coordinates = [0.0]
     irc_number_of_steps = list()
     irc_energy_all_points = list()
@@ -52,23 +56,65 @@ def extract_irc_from_output(output_file):
                 irc_energy_all_points.append(float(scf_energy.group(2)))
 
     irc_energies = list()
+    
     irc_energies.append(irc_energy_all_points[0])
-
     steps_cumulative = 0 
     for steps in irc_number_of_steps:
         steps_cumulative += steps
-        irc_energies.append(irc_energy_all_points[steps_cumulative])
+        if steps_cumulative >= len(irc_energy_all_points):
+            irc_energies.append(irc_energy_all_points[-1])
+        else:
+            irc_energies.append(irc_energy_all_points[steps_cumulative])
 
     irc_plot_data = np.column_stack([irc_coordinates, irc_energies])
     return irc_plot_data
 
+
+def extract_irc_from_output(output_file):
+    '''
+    This function takes a Gaussian output file and extract the IRC path from it. 
+    Returns a 2-column IRC (x= IRC displacement, y= Total energy)
+    '''  
+    irc_coordinates = list()
+    irc_energies = list()
+
+    with open(output_file) as f:
+        irc_data = f.readlines()
+
+        for i,content in enumerate(irc_data):
+            irc_completed_string = re.search('Reaction path calculation complete.', content)
+            irc_number_of_points = re.search('Total number of points:', content)
+            ts_energy_search = re.search('(Energies reported relative to the TS energy of) *-?([0-9]+.[0-9]+)', content)
+
+            if ts_energy_search:
+                ts_energy = float(ts_energy_search.group(2)) * -1
+            elif irc_completed_string:
+                irc_table_start = i + 7
+            elif irc_number_of_points:
+                irc_table_end = i - 2
+        irc_table = irc_data[irc_table_start:irc_table_end]
+
+        for irc_point in irc_table:
+            _, relative_energy, irc_coordinate = irc_point.split()
+            relative_energy = float(relative_energy)
+            irc_coordinate = abs(float(irc_coordinate))
+
+            irc_coordinates.append(irc_coordinate)
+            irc_energies.append(relative_energy + ts_energy)
+
+    irc_plot_data = np.column_stack([irc_coordinates, irc_energies])
+
+    #print("Extracted IRC Table")
+    #print(irc_plot_data)
+    return irc_plot_data
+
 def split_singlecalc_irc(irc_calculation):
     for i in range(len(irc_calculation)):
-        if irc_calculation[i,0] - irc_calculation[i+1,0] > 0:
+        if irc_calculation[i,0] - irc_calculation[i+1,0] < 0:
             fw_limit = i
             break
-    irc_rv = irc_calculation[fw_limit+1:, :]
-    irc_fw = irc_calculation[0:fw_limit+1, :]
+    irc_fw = irc_calculation[fw_limit+1:, :]
+    irc_rv = irc_calculation[0:fw_limit+1, :]
     return irc_rv, irc_fw
 
 def join_partial_irc(reactant_irc, product_irc):
@@ -79,9 +125,13 @@ def join_partial_irc(reactant_irc, product_irc):
     # reactant
     processed_reactant_irc = reactant_irc
     processed_reactant_irc[:,0] *= -1
-    processed_reactant_irc.sort(axis=0)
+    sorted_reactant = np.argsort(processed_reactant_irc[:,0])
+    processed_reactant_irc = processed_reactant_irc[sorted_reactant]
+
     # product
     processed_product_irc = product_irc
+    sorted_product = np.argsort(processed_product_irc[:,0])
+    processed_product_irc = processed_product_irc[sorted_product]
     # full irc
     full_irc = np.row_stack([processed_reactant_irc, processed_product_irc])
 
@@ -89,6 +139,8 @@ def join_partial_irc(reactant_irc, product_irc):
     if len(where_ts) == 2:
         full_irc = np.delete(full_irc, where_ts[0], axis=0)
     
+    #print("IRC for plot after processing:")
+    #print(full_irc)
     return full_irc
 
 def calculate_relative_energies(irc_calculation):
@@ -182,24 +234,44 @@ def plot_irc(irc_calculation):
         plt.savefig(f"{args.title.replace(' ','_')}.png", dpi=1200, bbox_inches="tight")
 
 
-if not args.downhill:
-    if args.subparser == 'single':
-        irc_extracted = extract_irc_from_output(args.output)
-        irc_rv, irc_fw = split_singlecalc_irc(irc_extracted)
-    elif args.subparser == 'double':
-        irc_rv = extract_irc_from_output(args.reverse)
-        irc_fw = extract_irc_from_output(args.forward)
 
+def call_plot_irc():
     if args.product == 'rv':
         full_irc = join_partial_irc(irc_fw,irc_rv)
     elif args.product == 'fw':
         full_irc = join_partial_irc(irc_rv,irc_fw)
-        
     full_irc_relative = calculate_relative_energies(full_irc)
     plot_irc(full_irc_relative[:,[0,2]])
-else:
-    irc_extracted = extract_irc_from_output(args.output)
-    full_irc_relative = calculate_relative_energies(irc_extracted)
-    plot_irc(full_irc_relative[:,[0,2]])
+
+if args.subparser == 'single':
+    if not args.brute_force:
+        if not args.downhill:
+            irc_extracted = extract_irc_from_output(args.output)
+            irc_rv, irc_fw = split_singlecalc_irc(irc_extracted)
+            call_plot_irc()
+        else:
+            irc_extracted = extract_irc_from_output(args.output)
+            full_irc_relative = calculate_relative_energies(irc_extracted)
+            plot_irc(full_irc_relative[:,[0,2]])
+    else:
+        if not args.downhill:
+            irc_extracted = extract_irc_from_output_brute_force(args.output)
+            irc_rv, irc_fw = split_singlecalc_irc(irc_extracted)
+            call_plot_irc()
+        else:
+            irc_extracted = extract_irc_from_output_brute_force(args.output)
+            full_irc_relative = calculate_relative_energies(irc_extracted)
+            plot_irc(full_irc_relative[:,[0,2]])
+
+elif args.subparser == 'double':
+    if not args.brute_force:
+        irc_rv = extract_irc_from_output(args.reverse)
+        irc_fw = extract_irc_from_output(args.forward)
+    else:
+        irc_rv = extract_irc_from_output_brute_force(args.reverse)
+        irc_fw = extract_irc_from_output_brute_force(args.forward) 
+    call_plot_irc()
+
+print(f"\n\n\n")
 
 
