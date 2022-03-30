@@ -9,7 +9,7 @@ fi
 
 #write header to output file
 output='gaussian_energies.txt'
-echo 'filename,total_energy,zpe,thermal,enthalpy,free_energy,imaginary_freq_qtd,lowest_freq' > $output 
+echo 'filename,total_energy,zpe,thermal,enthalpy,free_energy,imaginary_freq_qtd,lowest_freq' #> $output 
 
 for file in $files;
 do
@@ -24,7 +24,7 @@ do
 	lowest_freq=$(grep 'Frequencies' $file | head -n 1 | awk '{print $3}')
 	
 	#write energies of $file to output
-	echo $file,$total_energy,$zero_point,$thermal_energy,$enthalpy,$free_energy,$imaginary_freq_qtd,$lowest_freq >> $output
+	echo $file,$total_energy,$zero_point,$thermal_energy,$enthalpy,$free_energy,$imaginary_freq_qtd,$lowest_freq #>> $output
 done
 
 exit
