@@ -226,7 +226,7 @@ cmd.extend("add_vdw", add_VDW)
 def plot_cube(isovalue=0.004):
     cmd.set("internal_gui_width", 525)
     obj_list = cmd.get_names('objects')
-    
+    isovalue = float(isovalue)
     for cube in obj_list:
         orbitalName = 'orb-'+cube
         positiveOrbital = cube+'+'
@@ -306,7 +306,7 @@ def align_visible(reference_entry_id=0):
         cmd.align(entry, reference_entry, cycles=200)
 cmd.extend("align_visible", align_visible);
 
-def save_img(filename='default'):
+def save_img(filename='default', ray_mode=1):
     '''
     Export the current workspace as PNG using Ray-Tracing. If filename is not present
     the image is named default.png, except if only one element is visible in the workspace.
@@ -320,7 +320,7 @@ def save_img(filename='default'):
     canvas_width = screen_size[0]
     canvas_height = screen_size[1]
 
-    cmd.png(filename, canvas_width*3, canvas_height*3, dpi=300, ray=1)
+    cmd.png(filename, canvas_width*3, canvas_height*3, dpi=300, ray=ray_mode)
 cmd.extend("expimg", save_img)
 
 
