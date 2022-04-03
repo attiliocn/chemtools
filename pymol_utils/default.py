@@ -271,6 +271,17 @@ def nci(arg1, isovalue=0.3):
     cmd.set('two_sided_lighting',value=1)
 cmd.extend( "nci", nci );
 
+def electrostatic_potential_surface(arg1, isovalue=0.04, scale=0.5):
+    densf = arg1+"_dens"
+    gradf = arg1+"_esp"
+    min_surface, max_surface = [abs(float(scale))*-1, abs(float(scale))]
+    cmd.isosurface("dens",densf, isovalue)
+    cmd.ramp_new("ramp", gradf, [min_surface, max_surface], 'rainbow')
+    cmd.set("surface_color", "ramp", "dens")
+    cmd.set('transparency', 0.50, 'dens')
+    cmd.set('two_sided_lighting',value=1)
+cmd.extend( "elpot", electrostatic_potential_surface );
+
 def group_visible(groupname='test', include_measurements=False):
     visible_entries = cmd.get_object_list(selection='visible')
     if include_measurements:
