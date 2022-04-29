@@ -48,6 +48,7 @@ log_file.write('Processing the following files:\n')
 log_file.write('\n'.join(tbp_files)+'\n\n')
 
 for tbp_file in tbp_files:
+    tbp_file = tbp_file.split('/')[-1]
     log_file.write(f'Processing:\t{tbp_file}\n')
 
     tbp_type_number = get_tbp_type(tbp_file)
