@@ -19,8 +19,14 @@ CONFIG_DIR = os.path.join(AUTOTEST_DIR,'config')
 SCRIPTS_DIR = os.path.join(AUTOTEST_DIR, 'scripts')
 
 def get_tbp_type(filename):
-    tbp_type = re.search('tbp-[0-9]{1}', filename).group()
-    tbp_type_number = int(tbp_type.replace('tbp-', ''))
+    tbp_type = re.search('tbp-[0-9]{1}', filename)
+
+    if not tbp_type:
+        tbp_type_number = 1
+    else:
+        tbp_type = tbp_type.group()
+        tbp_type_number = int(tbp_type.replace('tbp-', ''))
+
     return tbp_type_number
 
 def get_pictr_input(filename, cross=args.cross, config_dir=CONFIG_DIR):
