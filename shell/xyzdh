@@ -1,0 +1,25 @@
+#!/bin/bash
+
+xyzCoordinates=$@
+
+for xyzCoordinate in $xyzCoordinates
+do
+    inputFile=${xyzCoordinate%.*}.inp
+
+    echo '! pal8' > $inputFile
+    echo '! PWPB95 def2-QZVP D4' >> $inputFile 
+    echo ''  >> $inputFile
+   
+    echo '%maxcore 4000' >> $inputFile
+    echo '%basis' >> $inputFile
+    echo '    AuxJ "def2/J"' >> $inputFile
+    echo '    AuxJK "def2/JK"' >> $inputFile
+    echo '    AuxC "def2-QZVPP/C"' >> $inputFile
+    echo 'end' >> $inputFile
+    echo '' >> $inputFile
+
+    echo '* xyz 0 1'  >> $inputFile
+    cat $xyzCoordinate | sed '1,2 d' >> $inputFile 
+    echo '*'  >> $inputFile
+
+done
