@@ -1,0 +1,10 @@
+#!/bin/bash
+
+for i in $@; do
+    echo "Current molecule:"
+    echo $i
+    molden $i
+    echo "Done"
+    echo ''
+done
+
