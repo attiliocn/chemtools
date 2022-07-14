@@ -10,6 +10,6 @@ for xyz_file in $@; do
     sed -i  '/!Put/d' $input_file
 
     sed -i 's/^#/# insert_route/' $input_file
-    sed -iE "s/^0 \+1/0 1/" $input_file
+    sed -i -E "s/^0 \+1/0 1/" $input_file
 
 done
