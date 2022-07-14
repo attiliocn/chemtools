@@ -5,6 +5,7 @@ if test -e extracted_results; then
     exit
 else
     mkdir results_extracted
+    mkdir results_extracted/logs
 fi
 
 for i in $(ls -d */); do
@@ -12,11 +13,16 @@ for i in $(ls -d */); do
    
     if test -f "$i"/xtbopt.log; then
         cp "$i"/xtbopt.xyz results_extracted/"$i".xyz
+        cp "$i"/xtbopt.log results_extracted/logs/"$i".log
+        cp "$i"/xtb.output results_extracted/logs/"$i".xtb
     elif test -f "$i"/crest_clustered.xyz; then
         echo "Found CREGEN clustered ensemble!"
         cp "$i"/crest_clustered.xyz results_extracted/"$i"_confs.xyz
+        cp "$i"/cregen.output results_extracted/logs/"$i".cregen
+        cp "$i"/crest.output results_extracted/logs/"$i".crest
     elif test -f "$i"/crest_conformers.xyz; then
         cp "$i"/crest_conformers.xyz results_extracted/"$i"_confs.xyz
+        cp "$i"/crest.output results_extracted/logs/"$i".crest
     fi  
 done
 
