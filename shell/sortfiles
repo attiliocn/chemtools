@@ -1,0 +1,6 @@
+#!/bin/bash
+
+for file in $@; do
+    cat $file | sort -V > temp.temp
+    mv temp.temp $file
+done
