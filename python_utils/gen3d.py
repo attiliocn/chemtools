@@ -21,7 +21,7 @@ def generate_3D_coords(smiles_string):
     return molecule_with_H
 
 with open(args.file) as file:
-    #file.readline() # ignore header in the first line
+    file.readline() # ignore header in the first line
     dataset = file.readlines()
 
 for entry in dataset:
