@@ -6,7 +6,9 @@ for file in $files
 do
     file_basename=${file%.*}
 
-    echo "%chk=dummy.chk" > $file_basename.com
+    timestamp=$(date "+%Y%m%d%H%M%S%N""$RANDOM")
+
+    echo "%chk="$timestamp".chk" > $file_basename.com
     echo "# opt=(nomicro,ts,calcfc,noeigentest,maxstep=5) external='xtb-gaussian --gfn 1'" >> $file_basename.com
     echo "" >> $file_basename.com
     echo $file_basename >> $file_basename.com
@@ -16,7 +18,7 @@ do
     
     echo "" >> $file_basename.com
     echo "--Link1--" >> $file_basename.com
-    echo "%chk=dummy.chk" >> $file_basename.com
+    echo "%chk="$timestamp".chk" >> $file_basename.com
     echo "%nosave" >> $file_basename.com
     echo "# freq geom=check external='xtb-gaussian --gfn 1'" >> $file_basename.com
     echo "" >> $file_basename.com
