@@ -33,7 +33,7 @@ with open(args.input) as input_file:
                 x_position = None
             else:
                 x_position = str(x_position)
-        requested_links = [int(i) for i in list(diagram_element_settings[3].replace(' ',''))]
+        requested_links = [int(i) for i in diagram_element_settings[3].split()]
 
         energy_diagram.add_level(energy=round(energy,1), bottom_text=label, position=x_position, top_text='Energy', linestyle='solid')
         
