@@ -12,7 +12,7 @@ done
 
 required_stat=$1
 search_in=$2
-temp_file="$(timestamp)_tempfile.txt"
+temp_file="/tmp/$(timestamp)_tempfile.txt"
 
 find . -type f -name "*.log" | sort -V > $temp_file
 sed -i '/slurm/d' $temp_file
