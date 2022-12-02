@@ -331,7 +331,9 @@ def save_img(filename='default', ray_mode=1):
     canvas_width = screen_size[0]
     canvas_height = screen_size[1]
 
+    cmd.set("ray_trace_gain", 8) # Increase ray_trace_gain for improved look on the final image
     cmd.png(filename, canvas_width*3, canvas_height*3, dpi=300, ray=ray_mode)
+    cmd.set("ray_trace_gain", 0.12) # Reset ray_trace_gain back to default
 cmd.extend("expimg", save_img)
 
 
