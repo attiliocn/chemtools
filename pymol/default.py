@@ -232,9 +232,9 @@ def plot_cube(isovalue=0.004):
         positiveOrbital = cube+'+'
         negativeOrbital = cube+'-'
         
-        cmd.isomesh(positiveOrbital,cube,isovalue*1)
+        cmd.isosurface(positiveOrbital,cube,isovalue*1)
         cmd.color("blue",positiveOrbital) 
-        cmd.isomesh(negativeOrbital,cube,isovalue*-1)
+        cmd.isosurface(negativeOrbital,cube,isovalue*-1)
         cmd.color("red",negativeOrbital)
 
         for orbital in (positiveOrbital,negativeOrbital):
