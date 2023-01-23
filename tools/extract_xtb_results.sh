@@ -17,6 +17,12 @@ for i in $(ls -d */); do
         cp "$i"/crest.output results_extracted/logs/"$i".crest
         cp "$i"/cluster.order results_extracted/logs/"$i".clusters
     
+    elif test -f "$i"/crest_ensemble.xyz; then
+        echo "CREST Standalone Tool Output"
+        cp "$i"/crest_ensemble.xyz results_extracted/"$i"_confs.xyz
+        cp "$i"/*.inp results_extracted/logs/
+        cp "$i"/crest.output results_extracted/logs/"$i".crest
+
     elif test -f "$i"/crest.output; then
         echo "Standard CREST output!"
         cp "$i"/crest_conformers.xyz results_extracted/"$i"_confs.xyz
@@ -41,7 +47,6 @@ for i in $(ls -d */); do
         cp "$i"/xtbopt.xyz results_extracted/"$i".xyz
         cp "$i"/xtbopt.log results_extracted/logs/"$i".log
         cp "$i"/xtb.output results_extracted/logs/"$i".xtb
-  
     fi
 done
 
