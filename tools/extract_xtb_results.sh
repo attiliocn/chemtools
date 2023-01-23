@@ -23,6 +23,13 @@ for i in $(ls -d */); do
         cp "$i"/crest.output results_extracted/logs/"$i".crest
         cp "$i"/xtbopt.log results_extracted/logs/"$i".log
 
+    elif test -f "$i"/xtbscan.log; then
+        echo "XTB output (scan)"
+        cp "$i"/xtbopt.xyz results_extracted/"$i".xyz
+        cp "$i"/xtbscan.log results_extracted/logs/"$i".scan
+        cp "$i"/xtbopt.log results_extracted/logs/"$i".log
+        cp "$i"/xtb.output results_extracted/logs/"$i".xtb
+
     elif test -f "$i"/xtblast.xyz; then
         echo "XTB output (non terminated)"
         cp "$i"/xtblast.xyz results_extracted/"$i"_error.xyz
