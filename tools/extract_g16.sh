@@ -6,7 +6,7 @@ if [[ -d results_extracted ]]; then
     exit
 else
     mkdir results_extracted 
-    find . -mindepth 2 -type f \( -name "*.com" -o -name "*.log" \) | xargs -I{} cp {} results_extracted
+    find . -mindepth 2 -type f \( -name "*.com" -o -name "*.log" \) | xargs -I{} cp -v {} results_extracted
 fi
 
 
