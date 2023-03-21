@@ -231,7 +231,8 @@ def plot_irc(irc_calculation):
     if not args.title:
         plt.show()
     else:
-        plt.savefig(f"{args.title.replace(' ','_')}.png", dpi=1200, bbox_inches="tight")
+        plt.savefig(f"{args.title.replace(' ','_')}.png", dpi=100, bbox_inches="tight")
+        plt.savefig(f"{args.title.replace(' ','_')}.svg", bbox_inches="tight")
 
 
 
