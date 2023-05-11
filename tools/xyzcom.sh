@@ -5,7 +5,7 @@ for xyz_file in $@; do
     input_file="$bn".com
     chk_file="$bn".chk
 
-    echo -e "%mem=16gb\n%nprocs=8\n%chk="$chk_file"" > $input_file
+    echo -e "%mem=14gb\n%nprocs=8\n%chk="$chk_file"" > $input_file
     obabel -ixyz $xyz_file -ocom >> $input_file 2> /dev/null
     sed -i  '/!Put/d' $input_file
 
