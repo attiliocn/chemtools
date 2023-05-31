@@ -42,6 +42,7 @@ if matches.any():
     matches = matches[0]
 else:
     print(f"Error: SMARTS {args.smarts} does not match for file {args.file}")
+    exit()
 
 
 if len(matches) == len(numbers):
