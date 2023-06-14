@@ -1,5 +1,7 @@
 #!/bin/bash
 
+timestamp=$(date "+%Y-%m-%d_%H-%M-%S")
+
 function grep_gstat() {
 for i in $(cat "$1"); do
     if [ -z $3 ] || [ $3 = "fast" ]; then
@@ -12,7 +14,7 @@ done
 
 required_stat=$1
 search_in=$2
-temp_file="/tmp/$(timestamp)_tempfile.txt"
+temp_file="/tmp/"$timestamp"_tempfile.txt"
 
 find . -type f -name "*.log" | sort -V > $temp_file
 sed -i '/slurm/d' $temp_file
