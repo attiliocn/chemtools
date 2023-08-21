@@ -30,7 +30,7 @@ def calculateDistanceMatrix(conf_ensemble):
     for matrixElement in comb:
         i = matrixElement[0]
         j = matrixElement[1]
-        
+      
         rmsd_entry = rmsd.hrmsd(
             conf_ensemble[i]['coordinates'], conf_ensemble[j]['coordinates'],
             conf_ensemble[i]['atomic_numbers'], conf_ensemble[j]['atomic_numbers'],

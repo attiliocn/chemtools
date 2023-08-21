@@ -11,7 +11,7 @@ def parse_xyz_ensemble(ens_file):
         n_molecules = 0
 
         for line in ensemble_data:
-            if re.search(f'^[\s\t]*{n_atoms}', line):
+            if re.search(f'^[ \t]*{n_atoms}', line):
                 n_molecules += 1
 
         molecular_ens = dict()
@@ -39,18 +39,24 @@ def parse_xyz_ensemble(ens_file):
             molecule_data['header'] = ensemble_slice[1].strip()
             molecule_data['elements'] = np.array(elements)
             molecule_data['atomic_numbers'] = np.array(atomic_numbers)
-            molecule_data['coordinates'] = np.array(coords)
+            molecule_data['coordinates'] = np.array(coords, dtype='float')
 
             molecular_ens[mol_id] = molecule_data
     
     return molecular_ens
 
-def write_xyz_file(elements,coordinates, header='', filename='molecule.xyz'):
-    n_atoms = len(elements)
+def build_xyz_content(elements, coordinates, header=''):
+    xyz_content = []
+    xyz_content.append(f"{str(len(coordinates))}\n")
+    xyz_content.append(f'{header}\n')
+    for i in np.concatenate((elements, coordinates), axis=1):
+        xyz_content.append("{: >3} {: >10} {: >10} {: >10}\n".format(*i))
+    xyz_content = ''.join(xyz_content)
+    return xyz_content
+
+def write_xyz_file(elements, coordinates, header='', filename='molecule.xyz'):
+    elements = elements.reshape(-1,1)
+    coordinates = coordinates.reshape(-1,3)
+    xyz_content = build_xyz_content(elements, coordinates, header)
     with open(filename, 'a') as f:
-        f.write(f"{n_atoms}\n")
-        f.write(f"{header}\n")
-        for i in range(n_atoms):
-            element = elements[i]
-            coords = '\t'.join(coordinates[i])
-            f.write(f'{element}\t{coords}\n')
+        f.write(xyz_content)
