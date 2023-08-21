@@ -27,7 +27,7 @@ function gvv(){
             cp $filepath "$temp_directory"
         fi
     done
-    gv "$temp_directory"/*
+    gv "$temp_directory"/* &
   }
 
 #gvv $@
