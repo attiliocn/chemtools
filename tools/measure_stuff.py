@@ -6,6 +6,8 @@ import pandas as pd
 parser = argparse.ArgumentParser()
 parser.add_argument('-f', '--files', nargs='+')
 parser.add_argument('-m', '--measurement', nargs='+',type=int,action='append')
+parser.add_argument('--ignore-atom', action='store_true')
+
 args = parser.parse_args()
 
 def measure_distance(p0,p1):
@@ -60,10 +62,13 @@ def read_xyz_file(filepath):
     coordinates = np.array(coordinates, dtype=float)
     return elements, coordinates
 
-def create_measurement_tag(atoms, elements):
+def create_measurement_tag(atoms, elements, ignore_atom=False):
     tag = []
     for atom in atoms:
-        tag.append(f"{elements[atom-1][0]}{atom}")
+        if not ignore_atom:
+            tag.append(f"{elements[atom-1][0]}{atom}")
+        elif ignore_atom:
+            tag.append(f"{atom} ")
     return "".join(tag)
 
 measurements = {}
@@ -71,7 +76,7 @@ for file in args.files:
     measurements[file] = {}
     elements, coordinates = read_xyz_file(file)
     for measurement in args.measurement:
-        tag = create_measurement_tag(measurement,elements)
+        tag = create_measurement_tag(measurement,elements,args.ignore_atom)
         point_coordinates = [coordinates[i-1] for i in measurement]
         if len(measurement) == 2:
             measurements[file][f"B {tag}"] = measure_distance(*point_coordinates)
