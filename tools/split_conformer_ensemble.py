@@ -14,10 +14,10 @@ for ensemble_filename in args.files:
         with open(ensemble_filename) as f:
             ensemble_content = f.readlines()
 
-        num_atoms = int(ensemble_content[0])
         ensemble_split = []
-        current_line = 0       
+        current_line = 0
         while current_line < len(ensemble_content):
+            num_atoms = int(ensemble_content[current_line])
             ensemble_split.append(ensemble_content[current_line:(current_line+num_atoms+2)])
             current_line += (num_atoms + 2)
         for molecule in ensemble_split:
