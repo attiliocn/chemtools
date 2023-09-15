@@ -49,7 +49,7 @@ for i in $(ls -d */); do
         cp "$i"/vibspectrum results_extracted/logs/"$i".vibspectrum
         cp "$i"/g98.out results_extracted/logs/"$i".out
         cp "$i"/xtb.output results_extracted/logs/"$i".xtb
-    fi
+
     elif test -f "$i"/xtb.output; then
         echo "Standard XTB output"
         cp "$i"/xtbopt.xyz results_extracted/"$i".xyz
