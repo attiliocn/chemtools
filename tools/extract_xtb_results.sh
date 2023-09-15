@@ -42,6 +42,14 @@ for i in $(ls -d */); do
         cp "$i"/xtbopt.log results_extracted/logs/"$i"_error.log
         cp "$i"/xtb.output results_extracted/logs/"$i"_error.xtb
 
+    elif test -f "$i"/vibspectrum; then
+        echo "XTB with Frequency Calculation"
+        cp "$i"/xtbopt.xyz results_extracted/"$i".xyz
+        cp "$i"/xtbopt.log results_extracted/logs/"$i".log
+        cp "$i"/vibspectrum results_extracted/logs/"$i".vibspectrum
+        cp "$i"/g98.out results_extracted/logs/"$i".out
+        cp "$i"/xtb.output results_extracted/logs/"$i".xtb
+    fi
     elif test -f "$i"/xtb.output; then
         echo "Standard XTB output"
         cp "$i"/xtbopt.xyz results_extracted/"$i".xyz
