@@ -35,7 +35,7 @@ for i in $(ls -d */); do
         cp "$i"/xtbscan.log results_extracted/logs/"$i".scan
         cp "$i"/xtbopt.log results_extracted/logs/"$i".log
         cp "$i"/xtb.output results_extracted/logs/"$i".xtb
-        cp "$i"/xtblast.xyz results_extracted/"$i"-failed.xtb
+        cp "$i"/xtblast.xyz results_extracted/"$i"-failed.xyz
 
     elif test -f "$i"/xtblast.xyz; then
         echo "XTB output (non terminated)"
