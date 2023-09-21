@@ -39,22 +39,46 @@ dataset['basename'] = basenames
 
 relative_energies_parsed = {}
 boltzmann_weights_parsed = {}
+boltzmann_weights_acc_parsed = {}
+conformers_up_90_parsed = {}
 for basename in dataset['basename'].unique():
     subset = dataset.loc[(dataset['basename'] == basename)]
     energies = subset.iloc[:,args.energy_column]
+
     relative_energies = get_relative_energy_Eh(energies)
-    boltzmann_weights = get_boltzmann_weights(relative_energies)
-    
     for i, energy in relative_energies.items():
         relative_energies_parsed[i] = energy * 627.5096
 
+    boltzmann_weights = get_boltzmann_weights(relative_energies)
     for i, weight in boltzmann_weights.items():
         boltzmann_weights_parsed[i] = weight
+
+    boltzmann_weights_acc = boltzmann_weights.sort_values(ascending=False).cumsum()
+    for i, weight in boltzmann_weights_acc.items():
+        boltzmann_weights_acc_parsed[i] = weight
+
+    conformers_bellow_90 = (boltzmann_weights_acc < 0.9)
+    conformers_first_above_90 = conformers_bellow_90.argmin()
+    conformers_up_90 = conformers_bellow_90.copy()
+    conformers_up_90.iloc[conformers_first_above_90] = True
+    for i, weight in conformers_up_90.items():
+        conformers_up_90_parsed[i] = weight
         
 relative_energies_parsed = pd.Series(relative_energies_parsed, name='Relative Energy kcal/mol')
 boltzmann_weights_parsed = pd.Series(boltzmann_weights_parsed, name='Boltzmann weight')
+boltzmann_weights_acc_parsed = pd.Series(boltzmann_weights_acc_parsed, name='Boltzmann weight acc')
+conformers_up_90_parsed = pd.Series(conformers_up_90_parsed, name='90% Threshold')
 
-parsed_energy  = pd.concat([dataset, relative_energies_parsed, boltzmann_weights_parsed], axis=1)
+parsed_energy  = pd.concat(
+    [
+        dataset, 
+        relative_energies_parsed, 
+        boltzmann_weights_parsed, 
+        boltzmann_weights_acc_parsed,
+        conformers_up_90_parsed,
+    ], 
+    axis=1
+)
 
 if args.sort:
     parsed_energy.sort_values(
