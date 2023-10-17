@@ -2,6 +2,7 @@
 
 import numpy as np
 import argparse
+from morfeus.geometry import kabsch_rotation_matrix
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-f', '--file', help='XMOL .xyz file')
@@ -9,6 +10,7 @@ parser.add_argument('--fragment', help='Fragment atom numbers (1-indexed)', type
 parser.add_argument('--stepsize', help='Displacement size (A)', type=float, required=True)
 parser.add_argument('--steps', help='Number of displacement steps', type=int, required=True)
 parser.add_argument('--dual', help="Use +step and -step sizes", action='store_true')
+parser.add_argument('--axis', help='Use two atoms to define the translation axis (Z). 1-indexed', type=int, nargs=2,)
 
 args = parser.parse_args()
 
@@ -47,17 +49,41 @@ def build_xyz_content(elements, coordinates):
     xyz_content = ''.join(xyz_content)
     return xyz_content
 
+
 elements, coordinates = read_xyz_file(args.file)
+
+if args.axis:
+    z_axis = np.array([[0.0, 0.0, 1.0]])
+    origin = coordinates[args.axis[0]-1]
+    coordinates = coordinates - origin
+    axis_bond = coordinates[args.axis[1]-1] - coordinates[args.axis[0]-1]
+    R = kabsch_rotation_matrix(axis_bond.reshape(1,-1), z_axis.reshape(1,-1), center=False)
+    coordinates = (R @ coordinates.T).T
+    displacement = np.array([0.,0.,args.stepsize])
+else:
+    displacement = args.stepsize
+
 fragment_atoms = expand_slice_from_string(args.fragment) - 1
-
-
 translate_steps = np.array(range(args.steps+1))[1:]
-translate_stepsizes = translate_steps * args.stepsize
+translate_stepsizes = np.array([i * displacement for i in translate_steps])
 
 if args.dual:
-    translate_stepsizes = np.r_[translate_stepsizes[::-1]*-1,[0],translate_stepsizes]
+    translate_stepsizes = np.concatenate(
+        [
+            (translate_stepsizes[::-1]*-1).flatten(),
+            [0,0,0],
+            (translate_stepsizes).flatten()
+        ]
+    )
+    translate_stepsizes = translate_stepsizes.reshape(-1,3)
 else:
-    translate_stepsizes = np.r_[[0],translate_stepsizes]
+    translate_stepsizes = np.concatenate(
+        [
+            [0,0,0],
+            (translate_stepsizes).flatten()
+        ]
+    )
+    translate_stepsizes = translate_stepsizes.reshape(-1,3)
 
 translate_map = [(i+1,j.round(3)) for i,j in enumerate(translate_stepsizes)]
 
