@@ -16,27 +16,19 @@ function gvv(){
         force_conversion=false
     fi
 
-    for filepath in $@; do
-        filepath=$(realpath "$filepath")
-        filename=$(basename "$filepath")
-        file_extension=$(echo "$filename" | awk -F . '{print $NF}')
-        converted_filename=""$temp_directory"/${filename/"$file_extension"/mol}"
+    for file in $@; do
+        file_extension=$(echo "$file" | awk -F . '{print $NF}')
+        file_basename=${file/."$file_extension"/}
         
         if [[ $file_extension == 'xyz' || $force_conversion == true ]]; then
-            obabel -ixyz $filepath -omol > $converted_filename
-        # elif [[ $file_extension == 'out' && $force_conversion == false ]]; then
-        #     echo "ORCA output. The optimized geometry will be extracted manually"
-        #     outxyz.sh $filepath
-        #     obabel -ixyz "${filepath/."$file_extension"/.xyz}" -omol > $converted_filename
+            obabel -ixyz $file -omol > "$temp_directory"/"$file_basename".mol
         elif [[ $file_extension == 'out' ]]; then
             echo "ORCA output. The output will be converted using OFakeG"
-            OfakeG "$filepath"
-            mv ${filepath/."$file_extension"/_fake."$file_extension"} $temp_directory/${filename/"$file_extension"/log}
+            OfakeG $file
+            mv "$file_basename"_fake.out "$temp_directory"/"$file_basename".log
         else
-            cp $filepath "$temp_directory"
+            cp $file "$temp_directory"
         fi
     done
     gv "$temp_directory"/* &
   }
-
-#gvv $@
