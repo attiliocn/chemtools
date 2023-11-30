@@ -24,7 +24,7 @@ function gvv(){
             obabel -ixyz $file -omol > "$temp_directory"/"$file_basename".mol
         elif [[ $file_extension == 'out' ]]; then
             echo "ORCA output. The output will be converted using OFakeG"
-            OfakeG $file
+            OfakeG $file &> /dev/null
             mv "$file_basename"_fake.out "$temp_directory"/"$file_basename".log
         else
             cp $file "$temp_directory"
