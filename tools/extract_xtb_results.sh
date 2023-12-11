@@ -48,6 +48,7 @@ for i in $(ls -d */); do
         cp "$i"/xtbopt.xyz results_extracted/"$i".xyz
         cp "$i"/xtbopt.log results_extracted/logs/"$i".log
         cp "$i"/vibspectrum results_extracted/logs/"$i".vibspectrum
+        cp "$i"/hessian results_extracted/logs/"$i".hess
         cp "$i"/g98.out results_extracted/logs/"$i".out
         cp "$i"/xtb.output results_extracted/logs/"$i".xtb
 
