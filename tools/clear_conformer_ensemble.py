@@ -7,16 +7,12 @@ import numpy as np
 import pandas as pd
 from itertools import combinations
 
-import matplotlib.pyplot as plt
-import seaborn as sns
-
 from spyrmsd import rmsd
 from parse_xyz import parse_xyz_ensemble as read_xyz
 from parse_xyz import write_xyz_file as write_xyz
 
 argparser = argparse.ArgumentParser()
 argparser.add_argument('files', help='Ensemble File in XYZ format', nargs='+')
-argparser.add_argument('--fig', help='Create Hierarchical Clustering plots', action='store_true')
 argparser.add_argument('--write', help='Write the unclustered ensemble to a XYZ file', action='store_true')
 args = argparser.parse_args()
 
@@ -40,9 +36,6 @@ def calculateDistanceMatrix(conf_ensemble):
         rmsdMatrix[j][i] = rmsd_entry
         
     return rmsdMatrix
-
-def save_fig(path, ext='png', dpi=300):
-    plt.savefig(f"{path}.{ext}", dpi=dpi)
 
 liner = '#'*80
 dropped_indexes = dict()
@@ -93,24 +86,6 @@ for ensemble in args.files:
         f.write(f'Final conformers {len(molecules) - len(droppeds)}\n')
         f.write(f"Processing of {ens_base} is done\n")
         f.write(f'{liner}\n\n')
-
-    if args.fig:
-        if not os.path.isdir('fig'): os.mkdir('fig')
-        #plot distance matrix in the original order
-        f, ax = plt.subplots(figsize=(11, 9))
-        sns.heatmap(matrix, cmap='jet')
-        save_fig(f'fig/{ens_base}_1-original_order')
-        plt.close()
-        
-        #plot distance matrix after hierarchical clustering
-        matrix_clustered = sns.clustermap(matrix, cmap='jet')
-        matrix_clustered.savefig(f'fig/{ens_base}_2-cluster_order')
-        plt.close()
-    
-        #plot the distance matrix with hierarchical chlustering after dropping the duplicates 
-        matrix_cut = sns.clustermap(dump, cmap='jet')
-        matrix_cut.savefig(f'fig/{ens_base}_3-duplicates_removed.png')
-        plt.close()
 
     mols_ids = set(molecules.keys())
     mols_drop_ids = set(droppeds)
