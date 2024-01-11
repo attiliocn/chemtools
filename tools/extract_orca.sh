@@ -1,2 +1,2 @@
 #!/bin/bash
-mkdir results_extracted && find . -mindepth 2 -type f \( -name "*.out" -o -name "*.inp" \) -exec cp -v {} results_extracted/ \;
+mkdir results_extracted && find . -mindepth 2 -type f \( -name "*.out" -o -name "*.inp" -o -name "*.hess" \) \( -not -name "*smd*" -o -not -name "*scf*" -o -not -name "*atom*" \) -exec cp -v {} results_extracted/ \;
