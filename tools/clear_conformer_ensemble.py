@@ -49,6 +49,7 @@ for ensemble in args.files:
     molecules = read_xyz(ensemble)
     matrix = calculateDistanceMatrix(molecules)
     matrix = pd.DataFrame(matrix)
+    matrix.to_csv('drops.csv')
     
     #process the unclustered distance matrix based on an RMSD threshold
     with open('drops.log', mode='a') as f:
