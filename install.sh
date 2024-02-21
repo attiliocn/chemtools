@@ -1,6 +1,8 @@
 #!/bin/bash
 
-source "$CHEMTOOLS_DIR"/functions/*.sh
+for f in "$CHEMTOOLS_DIR"/functions/*.sh; do
+    source $f
+done
 
 export PATH=""$PATH":"$CHEMTOOLS_DIR"/tools"
 export PATH=""$PATH":"$CHEMTOOLS_DIR"/converters"
