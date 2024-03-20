@@ -1,6 +1,6 @@
 #!/bin/bash
 function gvv(){
-    temp_directory="/tmp/geometry"
+    temp_directory="/tmp/tmp.gaussview"
     
     if [[ -d "$temp_directory" ]]; then
         rm -rf "$temp_directory"
@@ -30,5 +30,5 @@ function gvv(){
             cp $file "$temp_directory"
         fi
     done
-    gv "$temp_directory"/* &
+    gv "$temp_directory"/* &> /dev/null &
   }
