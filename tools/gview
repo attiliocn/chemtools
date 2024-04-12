@@ -1,0 +1,60 @@
+#!/usr/bin/env python3
+
+import argparse
+import shutil
+import os
+import re
+
+parser = argparse.ArgumentParser()
+parser.add_argument('files', nargs='+', help='files to open')
+args = parser.parse_args()
+
+OUTPUT_DIRECTORY = "/tmp/tmp.gaussview"
+
+try:
+    shutil.rmtree(OUTPUT_DIRECTORY)
+    os.mkdir(OUTPUT_DIRECTORY)
+except FileNotFoundError:
+    os.mkdir(OUTPUT_DIRECTORY)
+
+def identify_file_format(file):
+    regex_g16 = 'This is part of the Gaussian\(R\) 16 program\.'
+    regex_orca5 = '\* O   R   C   A \*'
+    regex_xyz = '(^[a-zA-Z]{1,2})([\s\t]+(-?[0-9]+\.[0-9]+))([\s\t]+(-?[0-9]+\.[0-9]+))([\s\t]+(-?[0-9]+\.[0-9]+))'
+
+    with open(file) as f:
+        file_head = [next(f) for _ in range(20)]
+    for line in file_head:
+        if re.search(regex_g16,line):
+            file_format='g16'
+            break
+        elif re.search(regex_orca5,line):
+            file_format='orca'
+            break
+        elif re.search(regex_xyz,line):
+            file_format='xyz'
+            break
+        else:
+            file_format = None
+            continue
+    
+    return file_format
+
+for file in args.files:
+    format = identify_file_format(file)
+    _ = file.rsplit('.', 1)
+    basename = _[0]
+    extension = _[1]
+
+    if format == 'g16':
+        shutil.copy(file, OUTPUT_DIRECTORY)
+    elif format == 'orca':
+        shutil.copy(file, OUTPUT_DIRECTORY)
+        os.system(f'OfakeG {OUTPUT_DIRECTORY}/{file} &> /dev/null')
+        shutil.move(f"{OUTPUT_DIRECTORY}/{basename}_fake.{extension}", f"{OUTPUT_DIRECTORY}/{file}")
+    elif format == 'xyz':
+        shutil.copy(file, OUTPUT_DIRECTORY)
+        os.system(f'obabel -ixyz {OUTPUT_DIRECTORY}/{file} -omol > {OUTPUT_DIRECTORY}/{basename}.mol 2> /dev/null')
+        os.remove(f"{OUTPUT_DIRECTORY}/{file}")
+        
+os.system(f'gv {OUTPUT_DIRECTORY}/* &')
