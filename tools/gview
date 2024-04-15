@@ -20,7 +20,7 @@ except FileNotFoundError:
 def identify_file_format(file):
     regex_g16 = 'This is part of the Gaussian\(R\) 16 program\.'
     regex_orca5 = '\* O   R   C   A \*'
-    regex_xyz = '(^[a-zA-Z]{1,2})([\s\t]+(-?[0-9]+\.[0-9]+))([\s\t]+(-?[0-9]+\.[0-9]+))([\s\t]+(-?[0-9]+\.[0-9]+))'
+    regex_xyz = '(^ +?[a-zA-Z]{1,2})([\s\t]+(-?[0-9]+\.[0-9]+))([\s\t]+(-?[0-9]+\.[0-9]+))([\s\t]+(-?[0-9]+\.[0-9]+))'
 
     with open(file) as f:
         file_head = [next(f) for _ in range(20)]
@@ -43,21 +43,22 @@ def identify_file_format(file):
 for filepath in args.files:
     format = identify_file_format(filepath)
 
-    _ = filepath.rsplit('/',1)
-    dirname = _[0]
-    filename = _[1]
-    _ = filename.rsplit('.', 1)
-    basename = _[0]
+    basename = os.path.basename(filepath)
+    _ = basename.rsplit('.', 1)
+    filename = _[0]
     extension = _[1]
 
     shutil.copy(filepath, OUTPUT_DIRECTORY)
     if format == 'g16':
         pass
     elif format == 'orca':
-        os.system(f'OfakeG {OUTPUT_DIRECTORY}/{filename} &> /dev/null')
-        shutil.move(f"{OUTPUT_DIRECTORY}/{basename}_fake.{extension}", f"{OUTPUT_DIRECTORY}/{filename}")
+        os.system(f'OfakeG {OUTPUT_DIRECTORY}/{basename} &> /dev/null')
+        shutil.move(f"{OUTPUT_DIRECTORY}/{filename}_fake.{extension}", f"{OUTPUT_DIRECTORY}/{basename}")
     elif format == 'xyz':
-        os.system(f'obabel -ixyz {OUTPUT_DIRECTORY}/{filename} -omol > {OUTPUT_DIRECTORY}/{basename}.mol 2> /dev/null')
-        os.remove(f"{OUTPUT_DIRECTORY}/{filename}")
+        os.system(f'obabel -ixyz {OUTPUT_DIRECTORY}/{basename} -omol > {OUTPUT_DIRECTORY}/{filename}.mol 2> /dev/null')
+        os.remove(f"{OUTPUT_DIRECTORY}/{basename}")
+    else:
+        print("Unrecognized format. Exiting...")
+        exit()
         
 os.system(f'gv {OUTPUT_DIRECTORY}/* &')
