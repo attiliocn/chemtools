@@ -40,21 +40,24 @@ def identify_file_format(file):
     
     return file_format
 
-for file in args.files:
-    format = identify_file_format(file)
-    _ = file.rsplit('.', 1)
+for filepath in args.files:
+    format = identify_file_format(filepath)
+
+    _ = filepath.rsplit('/',1)
+    dirname = _[0]
+    filename = _[1]
+    _ = filename.rsplit('.', 1)
     basename = _[0]
     extension = _[1]
 
+    shutil.copy(filepath, OUTPUT_DIRECTORY)
     if format == 'g16':
-        shutil.copy(file, OUTPUT_DIRECTORY)
+        pass
     elif format == 'orca':
-        shutil.copy(file, OUTPUT_DIRECTORY)
-        os.system(f'OfakeG {OUTPUT_DIRECTORY}/{file} &> /dev/null')
-        shutil.move(f"{OUTPUT_DIRECTORY}/{basename}_fake.{extension}", f"{OUTPUT_DIRECTORY}/{file}")
+        os.system(f'OfakeG {OUTPUT_DIRECTORY}/{filename} &> /dev/null')
+        shutil.move(f"{OUTPUT_DIRECTORY}/{basename}_fake.{extension}", f"{OUTPUT_DIRECTORY}/{filename}")
     elif format == 'xyz':
-        shutil.copy(file, OUTPUT_DIRECTORY)
-        os.system(f'obabel -ixyz {OUTPUT_DIRECTORY}/{file} -omol > {OUTPUT_DIRECTORY}/{basename}.mol 2> /dev/null')
-        os.remove(f"{OUTPUT_DIRECTORY}/{file}")
+        os.system(f'obabel -ixyz {OUTPUT_DIRECTORY}/{filename} -omol > {OUTPUT_DIRECTORY}/{basename}.mol 2> /dev/null')
+        os.remove(f"{OUTPUT_DIRECTORY}/{filename}")
         
 os.system(f'gv {OUTPUT_DIRECTORY}/* &')
