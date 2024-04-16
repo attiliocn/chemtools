@@ -23,7 +23,13 @@ def identify_file_format(file):
     regex_xyz = '(^ +)?([a-zA-Z]{1,2})([\s\t]+(-?[0-9]+\.[0-9]+))([\s\t]+(-?[0-9]+\.[0-9]+))([\s\t]+(-?[0-9]+\.[0-9]+))'
 
     with open(file) as f:
-        file_head = [next(f) for _ in range(20)]
+        file_content = f.readlines()
+
+    if len(file_content) < 20:
+        file_head = file_content[:3]
+    else:
+        file_head = file_content[:20]
+
     for line in file_head:
         if re.search(regex_g16,line):
             file_format='g16'
