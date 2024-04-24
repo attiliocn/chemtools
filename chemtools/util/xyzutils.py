@@ -28,10 +28,9 @@ def build_xyz_file(elements, coordinates, header=''):
     xyz_content.append(f'{header}\n')
 
     elements = elements.reshape(-1,1)
-    coordinates = coordinates.round(10)
-
-    for i in np.concatenate((elements, coordinates), axis=1):
-        xyz_content.append("{: >3} {: >20} {: >20} {: >20}\n".format(*i))
+    
+    for el,co in zip(elements,coordinates):
+        xyz_content.append("{: >3} {: >15.10f} {: >15.10f} {: >15.10f}\n".format(el[0], *co))
     xyz_content = ''.join(xyz_content)
     return xyz_content
 
@@ -65,5 +64,5 @@ def read_xyz_ensemble(filepath):
         molecule_data['atomic_numbers'] = np.array(atomic_numbers)
         molecule_data['coordinates'] = np.array(coordinates, dtype='float')
         parsed_ensemble[mol_id] = molecule_data
-        
+
     return parsed_ensemble
