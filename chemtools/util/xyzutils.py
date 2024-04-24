@@ -22,12 +22,7 @@ def read_xyz_file(filepath):
     coordinates = np.array(coordinates, dtype=float)
     return elements, coordinates
 
-def write_xyz_file(elements, coordinates, filename):
-    xyz_file_content = build_xyz_content(elements, coordinates, header=filename)
-    with open(filename, mode='w') as f:
-        f.write(xyz_file_content)
-
-def build_xyz_content(elements, coordinates, header=''):
+def build_xyz_file(elements, coordinates, header=''):
     xyz_content = []
     xyz_content.append(f"{str(len(coordinates))}\n")
     xyz_content.append(f'{header}\n')
@@ -69,7 +64,6 @@ def read_xyz_ensemble(filepath):
         molecule_data['elements'] = np.array(elements)
         molecule_data['atomic_numbers'] = np.array(atomic_numbers)
         molecule_data['coordinates'] = np.array(coordinates, dtype='float')
-
         parsed_ensemble[mol_id] = molecule_data
-    
+        
     return parsed_ensemble
