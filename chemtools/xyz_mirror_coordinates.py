@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 
 from argparse import ArgumentParser
-import numpy as np
-from util.xyzutils import read_xyz_file, build_xyz_file
+from modules.xyzutils import read_xyz_file, build_xyz_file
 
 argparser = ArgumentParser()
 argparser.add_argument('files', help='xyz file to mirror', nargs='+')
