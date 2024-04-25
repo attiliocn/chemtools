@@ -2,7 +2,7 @@
 
 import argparse
 
-from util.xyzutils import read_xyz_ensemble, build_xyz_content
+from modules.xyzutils import read_xyz_ensemble, build_xyz_file
 
 parser = argparse.ArgumentParser()
 parser.add_argument('file', nargs='+', help='XYZ Files')
@@ -23,7 +23,7 @@ def main(filename):
     ensemble = read_xyz_ensemble(filename)
     molecule = ensemble[args.geometry-1]
     molecule['coordinates'] = molecule['coordinates'].round(5)
-    _ = build_xyz_content(
+    _ = build_xyz_file(
         molecule['elements'], 
         molecule['coordinates'],
         header=f"{args.file} geometry no {args.geometry}"
