@@ -1,5 +1,5 @@
 import numpy as np
-from kabsch import kabsch_algorithm
+from modules.kabsch import kabsch_algorithm
 
 def measure_distance(p0,p1):
     b0 = p1 - p0
