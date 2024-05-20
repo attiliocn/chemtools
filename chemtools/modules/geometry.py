@@ -42,23 +42,26 @@ def measure_dihedral_angle(p0,p1,p2,p3):
     y = np.dot(np.cross(b1, v), w)
     return np.degrees(np.arctan2(y, x))
 
-def rmsd(matrix1, matrix2):
-    # Flatten matrices and align them based on their centroids
-    centroid1 = np.mean(matrix1, axis=0)
-    centroid2 = np.mean(matrix2, axis=0)
-    matrix1 -= centroid1
-    matrix2 -= centroid2
+def rmsd(matrix1, matrix2, align=True):
+    if align:
+        # Flatten matrices and align them based on their centroids
+        centroid1 = np.mean(matrix1, axis=0)
+        centroid2 = np.mean(matrix2, axis=0)
+        matrix1 -= centroid1
+        matrix2 -= centroid2
 
-    # Calculate the optimal rotation matrix using Singular Value Decomposition (SVD)
-    rotation_matrix, t = kabsch_algorithm(
-        matrix2.reshape(3,-1),
-        matrix1.reshape(3,-1),
-        center=False
-    )
+        # Calculate the optimal rotation matrix using Singular Value Decomposition (SVD)
+        rotation_matrix, t = kabsch_algorithm(
+            matrix2.reshape(3,-1),
+            matrix1.reshape(3,-1),
+            center=False
+        )
 
-    # Apply the rotation to matrix1 and calculate the RMSD
-    transformed_matrix1 = (rotation_matrix @ matrix1.T).T
-    rmsd_value = np.sqrt(np.mean(np.square(transformed_matrix1 - matrix2)))
+        # Apply the rotation to matrix1 and calculate the RMSD
+        transformed_matrix1 = (rotation_matrix @ matrix1.T).T
+        rmsd_value = np.sqrt(np.mean(np.square(transformed_matrix1 - matrix2)))
+    else:
+        rmsd_value = np.sqrt(np.mean(np.square(matrix1 - matrix2)))
 
     return rmsd_value
 
@@ -70,6 +73,13 @@ def rmsd_matrix(matrices):
         for j in range(i):  # Only calculate the lower triangular part
             rmsd_matrix[i, j] = rmsd(matrices[i], matrices[j])
 
+    return rmsd_matrix
+
+def rmsd_matrix_compare(matrix_a, matrix_b, align=True):
+    rmsd_matrix = np.zeros((len(matrix_a), len(matrix_b)))
+    for i in range(len(matrix_a)):
+        for j in range(len(matrix_b)):
+            rmsd_matrix[i, j] = rmsd(matrix_a[i], matrix_b[j], align)
     return rmsd_matrix
 
 def get_duplicates_rmsd_matrix(matrix, threshold=0.25):
