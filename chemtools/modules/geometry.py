@@ -75,13 +75,6 @@ def rmsd_matrix(matrices):
 
     return rmsd_matrix
 
-def rmsd_matrix_compare(matrix_a, matrix_b, align=True):
-    rmsd_matrix = np.zeros((len(matrix_a), len(matrix_b)))
-    for i in range(len(matrix_a)):
-        for j in range(len(matrix_b)):
-            rmsd_matrix[i, j] = rmsd(matrix_a[i], matrix_b[j], align)
-    return rmsd_matrix
-
 def get_duplicates_rmsd_matrix(matrix, threshold=0.25):
     analysis = np.logical_and(matrix > 0, matrix <= threshold)
     to_delete = np.unique(np.where(analysis)[0])
