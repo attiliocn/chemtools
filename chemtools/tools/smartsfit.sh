@@ -1,7 +1,13 @@
 #!/bin/bash
 
 smarts=$1
-mol_fix=$2
-mol_mov=$3
+reference_file=$2
+shift
+shift
 
-obfit $smarts $mol_fix $mol_mov 2>&1 >/dev/null | head -n 1 | awk '{print $2}'
+for file in $@; do
+    if [[ "$file" != "$reference_file" ]]; then
+        obfit $smarts $reference_file $file 2> /dev/null 1> /tmp/geometry.tmp
+        mv /tmp/geometry.tmp $file
+    fi
+done
