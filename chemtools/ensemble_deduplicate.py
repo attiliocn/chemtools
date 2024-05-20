@@ -11,7 +11,7 @@ parser.add_argument('--threshold', type=float, default=.25, help='RMSD threshold
 args = parser.parse_args()
 
 for file in args.files:
-    basename, extension = file.split('.', 1)
+    basename, extension = file.rsplit('.', 1)
     basename_updated = f"{basename}_deduplicated.{extension}"
 
     ensemble = read_xyz_ensemble(file)
