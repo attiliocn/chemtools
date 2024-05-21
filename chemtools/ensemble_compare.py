@@ -9,7 +9,7 @@ from rdkit import Chem
 from rdkit.Chem import rdFMCS
 from rdkit.Chem import AllChem
 
-from modules.xyzutils import read_xyz_ensemble, read_xyz_file, build_xyz_file
+from modules.xyzutils import read_xyz_ensemble, read_xyz_file
 from modules.rdkitutils import convert_coordinates_to_mols
 
 parser = argparse.ArgumentParser()
