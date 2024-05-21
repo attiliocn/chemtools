@@ -18,7 +18,7 @@ parser.add_argument('ensemble2', help='XYZ Ensemble no 2')
 parser.add_argument('reference', help='Reference XYZ Structure')
 args = parser.parse_args()
 
-log = open('compare.log', mode='w', buffering=1)
+log = open('rmsd-compare.log', mode='w', buffering=1)
 log.write('Conformational Ensemble Comparison starting...\n')
 log.write('Reading ensembles\n')
 
@@ -67,8 +67,10 @@ for i in range(rmsd_matrix.shape[0]):
     for j in range(rmsd_matrix.shape[1]):
         probe_mol = mols_b[j]
         mv = probe_mol.GetSubstructMatch(pattern)
-        rms = rdMolAlign.AlignMol(probe_mol, ref_mol, atomMap=list(zip(mv,ref_match)))
-        rmsd_matrix[i, j] = rms
+        rmsd, R = rdMolAlign.GetAlignmentTransform(probe_mol, ref_mol, atomMap=list(zip(mv,ref_match)))
+        rmsd_matrix[i, j] = rmsd
+print(R)
+print(R.shape)
 
 log.write('Finished\n')
 log.write('\n\n')
