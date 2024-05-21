@@ -7,7 +7,7 @@ import seaborn as sns
 
 from rdkit import Chem
 from rdkit.Chem import rdFMCS
-from rdkit.Chem import AllChem
+from rdkit.Chem import rdMolAlign
 
 from modules.xyzutils import read_xyz_ensemble, read_xyz_file
 from modules.rdkitutils import convert_coordinates_to_mols
@@ -67,7 +67,7 @@ for i in range(rmsd_matrix.shape[0]):
     for j in range(rmsd_matrix.shape[1]):
         probe_mol = mols_b[j]
         mv = probe_mol.GetSubstructMatch(pattern)
-        rms = AllChem.AlignMol(probe_mol,ref_mol,atomMap=list(zip(mv,ref_match)))
+        rms = rdMolAlign.AlignMol(probe_mol, ref_mol, atomMap=list(zip(mv,ref_match)))
         rmsd_matrix[i, j] = rms
 
 log.write('Finished\n')
