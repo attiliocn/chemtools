@@ -1,9 +1,0 @@
-$constrain
-    
-    distance: 1,4,1.88 #Mo-Calk
-    distance: 4,3,2.96 #Calk-C1
-    distance: 3,2,1.36 #C1-C2
-    distance: 2,1,2.58 #C2-Mo
-    dihedral: 1,2,3,4,auto #MCB dihedral
-
-$end
