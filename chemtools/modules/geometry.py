@@ -1,6 +1,7 @@
 import numpy as np
-from concurrent.futures import ProcessPoolExecutor, as_completed
 from modules.kabsch import kabsch_algorithm
+from multiprocessing import Pool
+import os
 
 def measure_distance(p0,p1):
     b0 = p1 - p0
@@ -72,26 +73,24 @@ def rmsd_matrix(matrices):
 
     for i in range(num_matrices):
         for j in range(i):  # Only calculate the lower triangular part
-            rmsd_matrix[i, j] = rmsd(matrices[i], matrices[j])
+            rmsd_value = rmsd(matrices[i], matrices[j])
+            rmsd_matrix[i, j] = rmsd_value
 
     return rmsd_matrix
 
-def calculate_rmsd(i, j, matrices):
+def calculate_rmsd(args):
+    i, j, matrices = args
     return i, j, rmsd(matrices[i], matrices[j])
 def rmsd_matrix_parallel(matrices):
     num_matrices = len(matrices)
     rmsd_matrix = np.zeros((num_matrices, num_matrices))
-
-    tasks = []
-    with ProcessPoolExecutor() as executor:
-        for i in range(num_matrices):
-            for j in range(i):  # Only calculate the lower triangular part
-                tasks.append(executor.submit(calculate_rmsd, i, j, matrices))
-        
-        for future in as_completed(tasks):
-            i, j, rmsd_value = future.result()
-            rmsd_matrix[i, j] = rmsd_value
-
+    
+    tasks = [(i, j, matrices) for i in range(num_matrices) for j in range(i)]
+    
+    with Pool(processes=os.cpu_count()) as pool:
+        results = pool.map(calculate_rmsd, tasks)
+    for i, j, rmsd_value in results:
+        rmsd_matrix[i, j] = rmsd_value
     return rmsd_matrix
 
 def get_duplicates_rmsd_matrix(matrix, threshold=0.25):
