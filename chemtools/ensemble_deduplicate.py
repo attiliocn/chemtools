@@ -6,7 +6,7 @@ import time
 from modules.xyzutils import read_xyz_ensemble, build_xyz_file
 from modules import geometry
 
-start_time = time.time()
+start_time_global = time.time()
 
 parser = argparse.ArgumentParser()
 parser.add_argument('files', nargs='+', help='XYZ Ensemble Files')
@@ -27,9 +27,12 @@ for file in args.files:
 
     log.write(f"Current file: {basename}\n")
     log.write(f"Number of conformers: {numconfs}\n")
+    start_time = time.time()
 
     if args.parallel:
+        import os
         log.write("Using parallel RMSD calculator\n")
+        log.write(f"CPU Count: {os.cpu_count()}\n")
         rmsd_distance_matrix = geometry.rmsd_matrix_parallel(coordinates_all)
     else:
         rmsd_distance_matrix = geometry.rmsd_matrix(coordinates_all)
@@ -42,7 +45,10 @@ for file in args.files:
 
     log.write(f"Conformers after deduplication: {len(_coordinates)}\n")
     log.write(f"{numconfs - len(_coordinates)} conformers were deleted\n")
-    log.write(f"{len(_coordinates)} conformers will be written to {basename_updated}\n\n")
+    log.write(f"{len(_coordinates)} conformers will be written to {basename_updated}\n")
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    log.write(f"Wall clock time: {elapsed_time:.2f} seconds\n\n")
 
     with open(basename_updated, mode='w') as f:
         for header, elements, coordinates in zip(_header, _elements, _coordinates):  
@@ -53,9 +59,9 @@ for file in args.files:
             )
             f.write(_)
 
-end_time = time.time()
-elapsed_time = end_time - start_time
-log.write(f"Wall clock time: {elapsed_time:.2f} seconds\n")
+end_time_global = time.time()
+elapsed_time_global = end_time_global - start_time_global
+log.write(f"Total wall clock time: {elapsed_time_global:.2f} seconds\n")
 
 log.close()
         
