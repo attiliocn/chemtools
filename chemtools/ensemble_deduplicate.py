@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 
 import argparse
+import time
 
 from modules.xyzutils import read_xyz_ensemble, build_xyz_file
 from modules import geometry
+
+start_time = time.time()
 
 parser = argparse.ArgumentParser()
 parser.add_argument('files', nargs='+', help='XYZ Ensemble Files')
@@ -49,5 +52,10 @@ for file in args.files:
                 header=header
             )
             f.write(_)
+
+end_time = time.time()
+elapsed_time = end_time - start_time
+log.write(f"Wall clock time: {elapsed_time:.2f} seconds\n")
+
 log.close()
         
