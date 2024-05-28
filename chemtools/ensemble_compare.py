@@ -7,6 +7,9 @@ from rdkit import Chem
 from rdkit.Chem import rdFMCS
 from rdkit.Chem import rdMolAlign
 
+import matplotlib.pyplot as plt
+import seaborn as sns
+
 from modules.xyzutils import read_xyz_ensemble, read_xyz_file
 from modules.rdkitutils import convert_coordinates_to_mols
 
@@ -73,3 +76,21 @@ log.write('\n\n')
 log.close()
 
 np.savetxt("rmsd-compare.csv", rmsd_matrix, delimiter=",")
+
+plt.close('all')
+fig, ax = plt.subplots(dpi=300)
+heatmap = sns.heatmap(
+    data=rmsd_matrix
+)
+heatmap.set_xlabel(f"{args.ensemble2}")
+heatmap.set_ylabel(f"{args.ensemble1}")
+fig.tight_layout()
+plt.savefig('rmsd-compare-rmsd.png')
+
+plt.close('all')
+fig, ax = plt.subplots(dpi=300)
+cluster = sns.clustermap(
+    data=rmsd_matrix
+)
+fig.tight_layout()
+plt.savefig('rmsd-compare-cluster.png')
