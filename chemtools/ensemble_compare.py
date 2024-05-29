@@ -80,7 +80,9 @@ np.savetxt("rmsd-compare.csv", rmsd_matrix, delimiter=",")
 plt.close('all')
 fig, ax = plt.subplots(dpi=300)
 heatmap = sns.heatmap(
-    data=rmsd_matrix
+    data=rmsd_matrix,
+    cmap='Spectral_r',
+    vmin=0, vmax=5,
 )
 heatmap.set_xlabel(f"{args.ensemble2}")
 heatmap.set_ylabel(f"{args.ensemble1}")
@@ -90,7 +92,9 @@ plt.savefig('rmsd-compare-rmsd.png')
 plt.close('all')
 fig, ax = plt.subplots(dpi=300)
 cluster = sns.clustermap(
-    data=rmsd_matrix
+    data=rmsd_matrix,
+    cmap='Spectral_r',
+    vmin=0, vmax=5,
 )
 fig.tight_layout()
 plt.savefig('rmsd-compare-cluster.png')

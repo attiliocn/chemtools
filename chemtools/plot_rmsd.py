@@ -5,7 +5,7 @@ import seaborn as sns
 import pandas as pd
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-f','--matrix', help='RMSD matrix in csv format')
+parser.add_argument('matrix', help='RMSD matrix in csv format')
 parser.add_argument('--triangular', action='store_true', help='The RMSD matrix is in the (lower) triangular form')
 parser.add_argument('--linkage', default='average', help='Linkage Method for Hierarchical Clustering. See <https://seaborn.pydata.org/generated/seaborn.clustermap.html> for details')
 args = parser.parse_args()
@@ -18,7 +18,9 @@ if args.triangular:
 plt.close('all')
 fig, ax = plt.subplots(dpi=300)
 heatmap = sns.heatmap(
-    data=rmsd_matrix
+    data=rmsd_matrix,
+    cmap='Spectral_r',
+    vmin=0, vmax=5,
 )
 heatmap.set_xlabel(f"")
 heatmap.set_ylabel(f"")
@@ -29,6 +31,8 @@ plt.close('all')
 fig, ax = plt.subplots(dpi=300)
 cluster = sns.clustermap(
     data=rmsd_matrix,
+    cmap='Spectral_r',
+    vmin=0, vmax=5,
     method=args.linkage
 )
 fig.tight_layout()
