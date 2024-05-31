@@ -15,6 +15,8 @@ parser.add_argument('--parallel', action='store_true', help='Use the parallel ve
 args = parser.parse_args()
 
 log = open('deduplicate.log', mode='w', buffering=1)
+log.write(f"THRESHOLD: {args.threshold}\n")
+
 for file in args.files:
     basename, extension = file.rsplit('.', 1)
     basename_updated = f"{basename}_deduplicated.{extension}"
