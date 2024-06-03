@@ -10,6 +10,7 @@ done
 
 export PATH=""$PATH":"$CHEMTOOLS_DIR"/chemtools"
 export PATH=""$PATH":"$CHEMTOOLS_DIR"/chemtools/tools"
+export PATH=""$PATH":"$CHEMTOOLS_DIR"/chemtools/parsers"
 export PATH=""$PATH":"$CHEMTOOLS_DIR"/chemtools/converters"
 export PATH=""$PATH":"$CHEMTOOLS_DIR"/chemtools/shell"
 
