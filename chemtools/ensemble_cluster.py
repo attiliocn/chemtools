@@ -11,6 +11,7 @@ import seaborn as sns
 parser = argparse.ArgumentParser()
 parser.add_argument('distance_matrix', nargs='+', help='.csv distance matrix')
 parser.add_argument('--method', default='distance_threshold', choices=['distance_threshold','n_confs'], help='Method to generate the clusters')
+parser.add_argument('--num-clusters', type=int, default=None, help='Do not test for the best number of clusters. Use INT number of clusters instead')
 parser.add_argument('--max-clusters', type=int, default=50, help='Maximum number of clusters to test (--method=n_confs only)')
 parser.add_argument('--distance-threshold', type=float, default=1.0, help=' Maximum distance inside each cluster in A (--method=distance_threshold only)')
 parser.add_argument('--triangular', action='store_true', help='The RMSD matrix is in the (lower) triangular form')
@@ -25,9 +26,8 @@ for file in args.distance_matrix:
         dist_matrix += dist_matrix.T # convert matrix from lower triangular to symmetric
 
     if args.method == 'n_confs':
-        n_clusters = args.max_clusters
-        method_score = {}
-        for n_clusters in range(2,n_clusters):
+        if args.num_clusters:
+            n_clusters = args.num_clusters
             clustering = AgglomerativeClustering(
                 n_clusters=n_clusters,
                 compute_full_tree=True,
@@ -35,26 +35,37 @@ for file in args.distance_matrix:
                 metric='precomputed',
                 linkage='average'
             )
-            predictions = clustering.fit_predict(dist_matrix)
-            score = {
-                'silhouette': silhouette_score(dist_matrix, predictions), # higher
-                'calinski': calinski_harabasz_score(dist_matrix, predictions), # higher
-                'davies': davies_bouldin_score(dist_matrix, predictions) # lower
-            }
-            method_score[n_clusters] = score
-        
-        method_score_df = pd.DataFrame(method_score).T
+        else:
+            n_clusters = args.max_clusters
+            method_score = {}
+            for n_clusters in range(2,n_clusters):
+                clustering = AgglomerativeClustering(
+                    n_clusters=n_clusters,
+                    compute_full_tree=True,
+                    distance_threshold=None,
+                    metric='precomputed',
+                    linkage='average'
+                )
+                predictions = clustering.fit_predict(dist_matrix)
+                score = {
+                    'silhouette': silhouette_score(dist_matrix, predictions), # higher
+                    'calinski': calinski_harabasz_score(dist_matrix, predictions), # higher
+                    'davies': davies_bouldin_score(dist_matrix, predictions) # lower
+                }
+                method_score[n_clusters] = score
+            
+            method_score_df = pd.DataFrame(method_score).T
 
-        fig, [ax1,ax2,ax3] = plt.subplots(nrows=3)
-        sns.lineplot(ax=ax1, x=method_score_df.index, y=method_score_df['silhouette'], label='silhouette')
-        sns.lineplot(ax=ax2, x=method_score_df.index, y=method_score_df['calinski'], color='orange', label='calinsky')
-        sns.lineplot(ax=ax3, x=method_score_df.index, y=method_score_df['davies'], color='red', label='davies')
-        for ax in [ax1, ax2, ax3]:
-            ax.set_xlabel('')
-            ax.set_ylabel('')
-        fig.tight_layout()
-        plt.savefig('cluster-metrics.svg')
-        n_clusters = int(method_score_df['calinski'].idxmax())
+            fig, [ax1,ax2,ax3] = plt.subplots(nrows=3)
+            sns.lineplot(ax=ax1, x=method_score_df.index, y=method_score_df['silhouette'], label='silhouette')
+            sns.lineplot(ax=ax2, x=method_score_df.index, y=method_score_df['calinski'], color='orange', label='calinsky')
+            sns.lineplot(ax=ax3, x=method_score_df.index, y=method_score_df['davies'], color='red', label='davies')
+            for ax in [ax1, ax2, ax3]:
+                ax.set_xlabel('')
+                ax.set_ylabel('')
+            fig.tight_layout()
+            plt.savefig('cluster-metrics.svg')
+            n_clusters = int(method_score_df['calinski'].idxmax())
     
         clustering = AgglomerativeClustering(
                 n_clusters=n_clusters,
