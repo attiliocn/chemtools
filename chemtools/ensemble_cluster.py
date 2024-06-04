@@ -89,7 +89,7 @@ for file in args.distance_matrix:
                 linkage='average'
             )
                 
-    elif args.method == 'distance_threshold':
+    elif args.distance_threshold:
         clustering = AgglomerativeClustering(
             n_clusters=None,
             compute_full_tree=True,
