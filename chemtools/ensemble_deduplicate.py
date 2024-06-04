@@ -2,6 +2,7 @@
 
 import argparse
 import time
+import os
 
 from modules.xyzutils import read_xyz_ensemble, build_xyz_file
 from modules import geometry
@@ -11,7 +12,6 @@ start_time_global = time.time()
 parser = argparse.ArgumentParser()
 parser.add_argument('files', nargs='+', help='XYZ Ensemble Files')
 parser.add_argument('--threshold', type=float, default=.25, help='RMSD threshold for duplicate detection. Default is 0.25')
-parser.add_argument('--parallel', action='store_true', help='Use the parallel version of the RMSD matrix calculator')
 args = parser.parse_args()
 
 log = open('deduplicate.log', mode='w', buffering=1)
@@ -31,13 +31,9 @@ for file in args.files:
     log.write(f"Number of conformers: {numconfs}\n")
     start_time = time.time()
 
-    if args.parallel:
-        import os
-        log.write("Using parallel RMSD calculator\n")
-        log.write(f"CPU Count: {os.cpu_count()}\n")
-        rmsd_distance_matrix = geometry.rmsd_matrix_parallel(coordinates_all)
-    else:
-        rmsd_distance_matrix = geometry.rmsd_matrix(coordinates_all)
+    log.write("Using parallel RMSD calculator\n")
+    log.write(f"CPU Count: {os.cpu_count()}\n")
+    rmsd_distance_matrix = geometry.rmsd_matrix_parallel(coordinates_all)
     
     to_delete = geometry.get_duplicates_rmsd_matrix(rmsd_distance_matrix, threshold=args.threshold)
 
