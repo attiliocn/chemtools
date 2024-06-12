@@ -51,7 +51,7 @@ for i in $(ls -d */); do
         cp "$i"/hessian results_extracted/logs/"$i".hess
         cp "$i"/g98.out results_extracted/logs/"$i".out
         cp "$i"/xtb.output results_extracted/logs/"$i".xtb
-        cp "$i"/xtbhess.xyz results_extracted/logs/"$i"-mod.xyz
+        cp "$i"/xtbhess.xyz results_extracted/"$i"-mod.xyz
 
     elif test -f "$i"/xtb.output; then
         echo "Standard XTB output"
