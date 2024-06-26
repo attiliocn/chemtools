@@ -4,6 +4,8 @@ import argparse
 import time
 import os
 
+import numpy as np
+
 from modules.xyzutils import read_xyz_ensemble, build_xyz_file
 from modules import geometry
 
@@ -12,6 +14,7 @@ start_time_global = time.time()
 parser = argparse.ArgumentParser()
 parser.add_argument('files', nargs='+', help='XYZ Ensemble Files')
 parser.add_argument('--threshold', type=float, default=.25, help='RMSD threshold for duplicate detection. Default is 0.25')
+parser.add_argument('--all-atoms', action='store_true', help='Include H atoms in the RMSD calculation. Default is use only heavy atoms')
 args = parser.parse_args()
 
 log = open('deduplicate.log', mode='w', buffering=1)
@@ -27,15 +30,27 @@ for file in args.files:
     elements_all = [_['elements'] for _ in ensemble.values()]
     header_all = [_['header'] for _ in ensemble.values()]
 
+    if args.all_atoms:
+        coordinates_rmsd = coordinates_all
+    else:
+        heavy_atoms = np.where(elements_all[0] != 'H')[0]
+        coordinates_rmsd = [i[heavy_atoms,:] for i in coordinates_all]
+
     log.write(f"Current file: {basename}\n")
     log.write(f"Number of conformers: {numconfs}\n")
+    log.write(f"Use all atoms: {args.all_atoms}\n")
     start_time = time.time()
 
     log.write("Using parallel RMSD calculator\n")
     log.write(f"CPU Count: {os.cpu_count()}\n")
-    rmsd_distance_matrix = geometry.rmsd_matrix_parallel(coordinates_all)
-    
+    rmsd_distance_matrix = geometry.rmsd_matrix_parallel(coordinates_rmsd)
+
+    log.write(f"Exporting .csv distance matrix...\n")
+    np.savetxt(f'{basename}.csv', rmsd_distance_matrix, delimiter=",")
+    log.write(f"Done\n")
+
     to_delete = geometry.get_duplicates_rmsd_matrix(rmsd_distance_matrix, threshold=args.threshold)
+    
 
     _coordinates = [coordinates_all[i] for i in range(numconfs) if i not in to_delete]
     _elements = [elements_all[i] for i in range(numconfs) if i not in to_delete]
