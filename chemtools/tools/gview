@@ -18,9 +18,9 @@ except FileNotFoundError:
     os.mkdir(OUTPUT_DIRECTORY)
 
 def identify_file_format(file):
-    regex_g16 = 'This is part of the Gaussian\(R\) 16 program\.'
-    regex_orca5 = '\* O   R   C   A \*'
-    regex_xyz = '(^ +)?([a-zA-Z]{1,2})([\s\t]+(-?[0-9]+\.[0-9]+))([\s\t]+(-?[0-9]+\.[0-9]+))([\s\t]+(-?[0-9]+\.[0-9]+))'
+    regex_g16 = r'This is part of the Gaussian\(R\) 16 program\.'
+    regex_orca5 = r'\* O   R   C   A \*'
+    regex_xyz = r'(^ +)?([a-zA-Z]{1,2})([\s\t]+(-?[0-9]+\.[0-9]+))([\s\t]+(-?[0-9]+\.[0-9]+))([\s\t]+(-?[0-9]+\.[0-9]+))'
 
     with open(file) as f:
         file_content = f.readlines()
