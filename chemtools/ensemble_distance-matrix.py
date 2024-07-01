@@ -12,8 +12,8 @@ args = parser.parse_args()
 basename, extension = args.ensemble.rsplit('.', 1)
 
 ensemble = xyzutils.read_xyz_ensemble(args.ensemble)
-coordinates_all = [_['coordinates'] for _ in ensemble.values()]
 elements_all = [_['elements'] for _ in ensemble.values()]
+coordinates_all = [_['coordinates'] for _ in ensemble.values()]
 
 if args.all_atoms:
         coordinates_rmsd = coordinates_all
