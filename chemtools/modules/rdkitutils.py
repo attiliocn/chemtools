@@ -12,16 +12,29 @@ def convert_coordinates_to_mols(elements, coordinates):
     rdDetermineBonds.DetermineConnectivity(mol)
     return mol
 
-def rmsd(probe_mol,ref_mol):
-    rmsd = rdMolAlign.GetBestRMS(probe_mol, ref_mol)
+def get_maximum_substructure_matches(mols):
+    matches = []
+    for i in range(len(mols)):
+        for j in range(i):
+            match = mols[i].GetSubstructMatches(mols[j], uniquify=False)
+            if len(match) > len(matches):
+                matches = match
+    atomMap = []
+    for match in matches:
+        atomMap.append(list(zip(range(mols[0].GetNumAtoms()), match)))
+    return atomMap
+
+def rmsd(probe_mol,ref_mol, atomMap=None):
+    rmsd = rdMolAlign.GetBestRMS(probe_mol, ref_mol, map=atomMap)
     return rmsd
+
 def calculate_rmsd(args):
-    i, j, mols = args
-    return i, j, rmsd(mols[i], mols[j])
-def rmsd_matrix_parallel(mols:list):
+    i, j, mols, atomMap = args
+    return i, j, rmsd(mols[i], mols[j], atomMap=atomMap)
+def rmsd_matrix_parallel(mols:list, atomMap=None):
     num_matrices = len(mols)
     rmsd_matrix = np.zeros((num_matrices, num_matrices))
-    tasks = [(i, j, mols) for i in range(num_matrices) for j in range(i)]
+    tasks = [(i, j, mols, atomMap) for i in range(num_matrices) for j in range(i)]
     with Pool(processes=os.cpu_count()) as pool:
         results = pool.map(calculate_rmsd, tasks)
     for i, j, rmsd_value in results:
