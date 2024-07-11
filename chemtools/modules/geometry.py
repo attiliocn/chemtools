@@ -61,9 +61,13 @@ def rmsd(matrix1, matrix2, align=True):
 
         # Apply the rotation to matrix1 and calculate the RMSD
         transformed_matrix1 = (rotation_matrix @ matrix1.T).T
-        rmsd_value = np.sqrt(np.mean(np.square(transformed_matrix1 - matrix2)))
+        rmsd_value = np.sqrt(
+            np.mean(np.square(transformed_matrix1 - matrix2)) * 3
+            )
     else:
-        rmsd_value = np.sqrt(np.mean(np.square(matrix1 - matrix2)))
+        rmsd_value = np.sqrt(
+            np.mean(np.square(matrix1 - matrix2)) * 3
+        )
 
     return rmsd_value
 
