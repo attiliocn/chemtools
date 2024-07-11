@@ -9,6 +9,7 @@ from rdkit.Chem import rdDetermineBonds, rdMolAlign
 def convert_coordinates_to_mols(elements, coordinates):
     xyz = build_xyz_file(elements, coordinates)
     mol = Chem.rdmolfiles.MolFromXYZBlock(xyz)
+    mol = Chem.RemoveAllHs(mol)
     rdDetermineBonds.DetermineConnectivity(mol)
     return mol
 
