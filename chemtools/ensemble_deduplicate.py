@@ -1,20 +1,25 @@
 #!/usr/bin/env python3
 
+# TODO: make this script operate only in .csv lower triangular distance matrix
+# thus avoiding the need to refactor several rmsd engines every time a bug
+# comes out
+
+# TODO: use __main__ to loop through inputs, instead of a fucking 
+# _for_ loop
+
 import argparse
 import time
 import os
 
 import numpy as np
 
-from modules.xyzutils import read_xyz_ensemble, build_xyz_file
-from modules import geometry
+from modules import geometry, rdkitutils, xyzutils
 
 start_time_global = time.time()
 
 parser = argparse.ArgumentParser()
 parser.add_argument('files', nargs='+', help='XYZ Ensemble Files')
 parser.add_argument('--threshold', type=float, default=.25, help='RMSD threshold for duplicate detection. Default is 0.25')
-parser.add_argument('--all-atoms', action='store_true', help='Include H atoms in the RMSD calculation. Default is use only heavy atoms')
 args = parser.parse_args()
 
 log = open('deduplicate.log', mode='w', buffering=1)
@@ -24,26 +29,21 @@ for file in args.files:
     basename, extension = file.rsplit('.', 1)
     basename_updated = f"{basename}_deduplicated.{extension}"
 
-    ensemble = read_xyz_ensemble(file)
+    ensemble = xyzutils.read_xyz_ensemble(file)
     numconfs = len(ensemble)
-    coordinates_all = [_['coordinates'] for _ in ensemble.values()]
-    elements_all = [_['elements'] for _ in ensemble.values()]
-    header_all = [_['header'] for _ in ensemble.values()]
-
-    if args.all_atoms:
-        coordinates_rmsd = coordinates_all
-    else:
-        heavy_atoms = np.where(elements_all[0] != 'H')[0]
-        coordinates_rmsd = [i[heavy_atoms,:] for i in coordinates_all]
+    ens_elements = [_['elements'] for _ in ensemble.values()]
+    ens_coordinates = [_['coordinates'] for _ in ensemble.values()]
+    ens_header = [_['header'] for _ in ensemble.values()]
+    ens_mols = [rdkitutils.convert_coordinates_to_mols(ele, coords) for ele, coords in zip(ens_elements, ens_coordinates)]
 
     log.write(f"Current file: {basename}\n")
     log.write(f"Number of conformers: {numconfs}\n")
-    log.write(f"Use all atoms: {args.all_atoms}\n")
+
     start_time = time.time()
 
     log.write("Using parallel RMSD calculator\n")
     log.write(f"CPU Count: {os.cpu_count()}\n")
-    rmsd_distance_matrix = geometry.rmsd_matrix_parallel(coordinates_rmsd)
+    rmsd_distance_matrix = rdkitutils.rmsd_matrix_parallel(ens_mols)
 
     log.write(f"Exporting .csv distance matrix...\n")
     np.savetxt(f'{basename}.csv', rmsd_distance_matrix, delimiter=",")
@@ -52,9 +52,9 @@ for file in args.files:
     to_delete = geometry.get_duplicates_rmsd_matrix(rmsd_distance_matrix, threshold=args.threshold)
     
 
-    _coordinates = [coordinates_all[i] for i in range(numconfs) if i not in to_delete]
-    _elements = [elements_all[i] for i in range(numconfs) if i not in to_delete]
-    _header = [header_all[i] for i in range(numconfs) if i not in to_delete]
+    _coordinates = [ens_coordinates[i] for i in range(numconfs) if i not in to_delete]
+    _elements = [ens_elements[i] for i in range(numconfs) if i not in to_delete]
+    _header = [ens_header[i] for i in range(numconfs) if i not in to_delete]
 
     log.write(f"Conformers after deduplication: {len(_coordinates)}\n")
     log.write(f"{numconfs - len(_coordinates)} conformers were deleted\n")
@@ -65,7 +65,7 @@ for file in args.files:
 
     with open(basename_updated, mode='w') as f:
         for header, elements, coordinates in zip(_header, _elements, _coordinates):  
-            _ = build_xyz_file(
+            _ = xyzutils.build_xyz_file(
                 elements, 
                 coordinates,
                 header=header

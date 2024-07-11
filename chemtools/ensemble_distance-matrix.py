@@ -1,25 +1,21 @@
 #!/usr/bin/env python3
 
 import argparse
-from modules import geometry, xyzutils
+from modules import geometry, xyzutils, rdkitutils
 import numpy as np
 
 parser = argparse.ArgumentParser()
 parser.add_argument('ensemble', help='XYZ Ensemble File')
-parser.add_argument('--all-atoms', action='store_true', help='Include H atoms in the RMSD calculation. Default is use only heavy atoms')
 args = parser.parse_args()
 
 basename, extension = args.ensemble.rsplit('.', 1)
 
 ensemble = xyzutils.read_xyz_ensemble(args.ensemble)
-elements_all = [_['elements'] for _ in ensemble.values()]
-coordinates_all = [_['coordinates'] for _ in ensemble.values()]
+numconfs = len(ensemble)
+ens_elements = [_['elements'] for _ in ensemble.values()]
+ens_coordinates = [_['coordinates'] for _ in ensemble.values()]
+ens_header = [_['header'] for _ in ensemble.values()]
+ens_mols = [rdkitutils.convert_coordinates_to_mols(ele, coords) for ele, coords in zip(ens_elements, ens_coordinates)]
 
-if args.all_atoms:
-        coordinates_rmsd = coordinates_all
-else:
-    heavy_atoms = np.where(elements_all[0] != 'H')[0]
-    coordinates_rmsd = [i[heavy_atoms,:] for i in coordinates_all]
-
-rmsd_distance_matrix = geometry.rmsd_matrix_parallel(coordinates_rmsd)
+rmsd_distance_matrix = rdkitutils.rmsd_matrix_parallel(ens_mols)
 np.savetxt(f"{basename}.csv", rmsd_distance_matrix, delimiter=",")
