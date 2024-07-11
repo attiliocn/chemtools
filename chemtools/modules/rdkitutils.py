@@ -12,13 +12,15 @@ def convert_coordinates_to_mols(elements, coordinates):
     rdDetermineBonds.DetermineConnectivity(mol)
     return mol
 
-def get_maximum_substructure_matches(mols):
+def get_maximum_substructure_matches(mols, max_matches=1000):
     matches = []
     for i in range(len(mols)):
         for j in range(i):
-            match = mols[i].GetSubstructMatches(mols[j], uniquify=False)
+            match = mols[i].GetSubstructMatches(mols[j], uniquify=False, maxMatches=max_matches)
             if len(match) > len(matches):
                 matches = match
+        if len(matches) >= max_matches:
+            break
     atomMap = []
     for match in matches:
         atomMap.append(list(zip(range(mols[0].GetNumAtoms()), match)))
