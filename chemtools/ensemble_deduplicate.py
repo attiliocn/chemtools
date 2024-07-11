@@ -43,7 +43,11 @@ for file in args.files:
 
     log.write("Using parallel RMSD calculator\n")
     log.write(f"CPU Count: {os.cpu_count()}\n")
-    rmsd_distance_matrix = rdkitutils.rmsd_matrix_parallel(ens_mols)
+
+    atomMap = rdkitutils.get_maximum_substructure_matches(ens_mols)
+    log.write(f"Number of atom maps to test: {len(atomMap)}\n")
+
+    rmsd_distance_matrix = rdkitutils.rmsd_matrix_parallel(ens_mols, atomMap)
 
     log.write(f"Exporting .csv distance matrix...\n")
     np.savetxt(f'{basename}.csv', rmsd_distance_matrix, delimiter=",")
