@@ -6,10 +6,11 @@ from modules.xyzutils import build_xyz_file
 from rdkit import Chem
 from rdkit.Chem import rdDetermineBonds, rdMolAlign
 
-def convert_coordinates_to_mols(elements, coordinates):
+def convert_coordinates_to_mols(elements, coordinates, removeHs=False):
     xyz = build_xyz_file(elements, coordinates)
     mol = Chem.rdmolfiles.MolFromXYZBlock(xyz)
-    mol = Chem.RemoveAllHs(mol)
+    if removeHs:
+        mol = Chem.RemoveAllHs(mol)
     rdDetermineBonds.DetermineConnectivity(mol)
     return mol
 

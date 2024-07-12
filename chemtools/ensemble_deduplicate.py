@@ -34,7 +34,7 @@ for file in args.files:
     ens_elements = [_['elements'] for _ in ensemble.values()]
     ens_coordinates = [_['coordinates'] for _ in ensemble.values()]
     ens_header = [_['header'] for _ in ensemble.values()]
-    ens_mols = [rdkitutils.convert_coordinates_to_mols(ele, coords) for ele, coords in zip(ens_elements, ens_coordinates)]
+    ens_mols = [rdkitutils.convert_coordinates_to_mols(ele, coords, removeHs=True) for ele, coords in zip(ens_elements, ens_coordinates)]
 
     log.write(f"Current file: {basename}\n")
     log.write(f"Number of conformers: {numconfs}\n")
