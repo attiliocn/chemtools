@@ -20,6 +20,7 @@ start_time_global = time.time()
 parser = argparse.ArgumentParser()
 parser.add_argument('files', nargs='+', help='XYZ Ensemble Files')
 parser.add_argument('--threshold', type=float, default=.25, help='RMSD threshold for duplicate detection. Default is 0.25')
+parser.add_argument('--max-matches', '-c', type=int, default=1000, help='Maximum number of symmetric substructures to consider. Default is 1000')
 args = parser.parse_args()
 
 log = open('deduplicate.log', mode='w', buffering=1)
@@ -44,7 +45,7 @@ for file in args.files:
     log.write("Using parallel RMSD calculator\n")
     log.write(f"CPU Count: {os.cpu_count()}\n")
 
-    atomMap = rdkitutils.get_maximum_substructure_matches(ens_mols)
+    atomMap = rdkitutils.get_maximum_substructure_matches(ens_mols, max_matches=args.max_matches)
     log.write(f"Number of atom maps to test: {len(atomMap)}\n")
 
     rmsd_distance_matrix = rdkitutils.rmsd_matrix_parallel(ens_mols, atomMap)
