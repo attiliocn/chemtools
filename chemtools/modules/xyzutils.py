@@ -63,6 +63,11 @@ def read_xyz_ensemble(filepath):
         molecule_data['elements'] = np.array(elements)
         molecule_data['atomic_numbers'] = np.array(atomic_numbers)
         molecule_data['coordinates'] = np.array(coordinates, dtype='float')
+        molecule_data['stringContent'] = build_xyz_file(
+            molecule_data['elements'], 
+            molecule_data['coordinates'], 
+            molecule_data['header']
+        )
         parsed_ensemble[mol_id] = molecule_data
 
     return parsed_ensemble
