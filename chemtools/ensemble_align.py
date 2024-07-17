@@ -10,6 +10,7 @@ from rdkit import Chem
 parser = argparse.ArgumentParser()
 parser.add_argument('reference', help='Reference Molecule (XYZ format)')
 parser.add_argument('ensemble', help='Ensemble of molecules (XYZ format)')
+parser.add_argument('--removeH', action='store_true', help='Remove hydrogens from all molecules (heavy atom RMSD)')
 
 args = parser.parse_args()
 
@@ -22,15 +23,15 @@ ensemble = xyzutils.read_xyz_ensemble(args.ensemble)
 ens_elements = [_['elements'] for _ in ensemble.values()]
 ens_coordinates = [_['coordinates'] for _ in ensemble.values()]
 ens_header = [_['header'] for _ in ensemble.values()]
-ens_mols = [rdkitutils.convert_coordinates_to_mols(ele, coords) for ele, coords in zip(ens_elements, ens_coordinates)]
+ens_mols = [rdkitutils.convert_coordinates_to_mols(ele, coords, removeHs=args.removeH) for ele, coords in zip(ens_elements, ens_coordinates)]
 
-all_mols = np.concatenate([[ref_mol],ens_mols])
+atomMap = rdkitutils.get_maximum_substructure_matches(ens_mols, max_matches=100000)
 
 log.write(f'Aligning ensemble {args.ensemble} to reference {args.reference}\n')
 calculated_rmsd = {}
 for i, probe_mol in enumerate(ens_mols):
 
-    rmsd = rdkitutils.rmsd(probe_mol,ref_mol)
+    rmsd = rdkitutils.rmsd(probe_mol, ref_mol, atomMap)
     calculated_rmsd[f'{ens_header[i]}'] = rmsd
 
 log.write('Writing aligned ensemble to file\n')
