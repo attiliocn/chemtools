@@ -28,7 +28,7 @@ def get_maximum_substructure_matches(mols, max_matches=1000):
         atomMap.append(list(zip(range(mols[0].GetNumAtoms()), match)))
     return atomMap
 
-def rmsd(probe_mol,ref_mol, atomMap=None):
+def rmsd(probe_mol,ref_mol,atomMap=None):
     rmsd = rdMolAlign.GetBestRMS(probe_mol, ref_mol, map=atomMap)
     return rmsd
 
