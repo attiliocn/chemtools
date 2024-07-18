@@ -10,9 +10,16 @@ from rdkit import Chem
 parser = argparse.ArgumentParser()
 parser.add_argument('reference', help='Reference Molecule (XYZ format)')
 parser.add_argument('ensemble', help='Ensemble of molecules (XYZ format)')
-parser.add_argument('--removeH', action='store_true', help='Remove hydrogens from all molecules (heavy atom RMSD)')
+parser.add_argument('--removeH-struc', action='store_true', help='Remove all hydrogens from all molecules. Default is False')
+parser.add_argument('--keepH-rmsd', action='store_true', help='Keep H for RMSD calculation. Default is False')
+
 
 args = parser.parse_args()
+
+if args.keepH_rmsd:
+    removeH_rmsd = False
+else:
+    removeH_rmsd = True
 
 log = open('align.log', mode='w', buffering=1)
 
@@ -23,9 +30,10 @@ ensemble = xyzutils.read_xyz_ensemble(args.ensemble)
 ens_elements = [_['elements'] for _ in ensemble.values()]
 ens_coordinates = [_['coordinates'] for _ in ensemble.values()]
 ens_header = [_['header'] for _ in ensemble.values()]
-ens_mols = [rdkitutils.convert_coordinates_to_mols(ele, coords, removeHs=args.removeH) for ele, coords in zip(ens_elements, ens_coordinates)]
+ens_mols = [rdkitutils.convert_coordinates_to_mols(ele, coords, removeHs=args.removeH_struc) for ele, coords in zip(ens_elements, ens_coordinates)]
 
-atomMap = rdkitutils.get_maximum_substructure_matches(ens_mols, max_matches=100000)
+atomMap = rdkitutils.get_maximum_substructure_matches(ens_mols, max_matches=1000000, removeHs=removeH_rmsd)
+log.write(f'Number of atom maps: {len(atomMap)}\n')
 
 log.write(f'Aligning ensemble {args.ensemble} to reference {args.reference}\n')
 calculated_rmsd = {}
