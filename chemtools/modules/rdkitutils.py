@@ -14,14 +14,12 @@ def convert_coordinates_to_mols(elements, coordinates, removeHs=False):
     rdDetermineBonds.DetermineConnectivity(mol)
     return mol
 
-def get_maximum_substructure_matches(mols, max_matches=1000, removeHs=False):
-    if removeHs:
-        _mols = []
-        for mol in mols:
-            mol = Chem.RemoveAllHs(mol)
-            rdDetermineBonds.DetermineConnectivity(mol)
-            _mols.append(mol)
-        mols = _mols
+def get_maximum_substructure_matches(mols, max_matches=1000):
+    '''
+    NOTE: this function
+    does not work if molecules within the ensemble
+    do not have the same atom numbers
+    '''
     matches = []
     for i in range(len(mols)):
         for j in range(i):
