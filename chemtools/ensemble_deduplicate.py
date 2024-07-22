@@ -23,7 +23,7 @@ for file in args.files:
     start_time = time.time()
 
     basename, extension = file.rsplit('.', 1)
-    basename_updated = f"{basename}_deduplicated.{extension}"
+    basename_updated = f"{basename}_deduplicated.xyz"
     log.write(f"Current file: {basename}\n")
 
     rmsd_distance_matrix = np.genfromtxt(file, delimiter=",")
