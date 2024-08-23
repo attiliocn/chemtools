@@ -58,7 +58,7 @@ for filepath in args.files:
     if format == 'g16':
         pass
     elif format == 'orca':
-        os.system(f'OfakeG {OUTPUT_DIRECTORY}/{basename} &> /dev/null')
+        os.system(f'OfakeG {OUTPUT_DIRECTORY}/{basename} > /dev/null 2>&1')
         shutil.move(f"{OUTPUT_DIRECTORY}/{filename}_fake.{extension}", f"{OUTPUT_DIRECTORY}/{basename}")
     elif format == 'xyz':
         os.system(f'obabel -ixyz {OUTPUT_DIRECTORY}/{basename} -omol > {OUTPUT_DIRECTORY}/{filename}.mol 2> /dev/null')
