@@ -7,9 +7,10 @@ import re
 
 parser = argparse.ArgumentParser()
 parser.add_argument('files', nargs='+', help='files to open')
+parser.add_argument('-c,', '--cwd', default='/tmp/tmp.gaussview', help='Temporary directory to store the GaussView files. Default is /tmp/tmp.gaussview')
 args = parser.parse_args()
 
-OUTPUT_DIRECTORY = "/tmp/tmp.gaussview"
+OUTPUT_DIRECTORY = args.cwd
 
 try:
     shutil.rmtree(OUTPUT_DIRECTORY)
