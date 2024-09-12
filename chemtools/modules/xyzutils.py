@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import json
+import re
 
 __location__ = os.path.realpath(
     os.path.join(os.getcwd(), os.path.dirname(__file__)))
@@ -72,5 +73,55 @@ def read_xyz_ensemble_singular(filepath):
             molecule_data['header']
         )
         parsed_ensemble[mol_id] = molecule_data
+
+    return parsed_ensemble
+
+def read_xyz_ensemble(filepath):
+    '''
+    XYZ Ensemble Parser compatible with nonsingular (distinct molecules) ensembles
+    '''
+    with open(filepath) as f:
+        ensemble_data = [l.strip() for l in f.readlines()]
+        
+    regex_numAtoms = re.compile(r'^([\s\t]+)?[0-9]+$')
+    
+    idx_numAtoms = []
+    for i in range(len(ensemble_data)):
+        if regex_numAtoms.search(ensemble_data[i]):
+            idx_numAtoms.append(i)
+    
+    all_molecules = []
+    for i in idx_numAtoms:
+        numAtoms = int(ensemble_data[i])
+        start_line = i
+        end_line = i + (numAtoms + 2)
+        all_molecules.append(ensemble_data[start_line:end_line])
+
+    num_molecules = len(all_molecules)
+    parsed_ensemble = dict()
+    for i, mol in enumerate(all_molecules):
+        molecule_data = dict()
+
+        cartesian = mol[2:]
+        elements = list()
+        coordinates = list()
+
+        for i in cartesian:
+            elements.append(i.split()[0])
+            coordinates.append(i.split()[1:])
+
+        atomic_numbers = [element_to_Z[element] for element in elements]
+
+        molecule_data['num_atoms'] = int(mol[0])
+        molecule_data['header'] = mol[1]
+        molecule_data['elements'] = np.array(elements)
+        molecule_data['atomic_numbers'] = np.array(atomic_numbers)
+        molecule_data['coordinates'] = np.array(coordinates, dtype='float')
+        molecule_data['stringContent'] = build_xyz_file(
+            molecule_data['elements'], 
+            molecule_data['coordinates'], 
+            molecule_data['header']
+        )
+        parsed_ensemble[i] = molecule_data
 
     return parsed_ensemble
