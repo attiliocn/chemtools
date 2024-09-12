@@ -34,7 +34,10 @@ def build_xyz_file(elements, coordinates, header=''):
     xyz_content = ''.join(xyz_content)
     return xyz_content
 
-def read_xyz_ensemble(filepath):
+def read_xyz_ensemble_singular(filepath):
+    '''
+    XYZ Ensemble Parser for singular ensembles (all molecules have the same number of atoms -- conformers)
+    '''
     with open(filepath) as f:
         ensemble_data = [l.strip() for l in f.readlines()]
         
