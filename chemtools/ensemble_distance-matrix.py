@@ -10,6 +10,7 @@ import os
 parser = argparse.ArgumentParser()
 parser.add_argument('ensemble', help='XYZ Ensemble File')
 parser.add_argument('--max-matches', '-c', type=int, default=1000000, help='Maximum number of symmetric substructures to consider. Default is 1e6')
+parser.add_argument('--keep-H', action='store_false', help='Keep Hydrogens for RMSD calculation')
 args = parser.parse_args()
 
 basename, extension = args.ensemble.rsplit('.', 1)
@@ -19,7 +20,7 @@ numconfs = len(ensemble)
 ens_elements = [_['elements'] for _ in ensemble.values()]
 ens_coordinates = [_['coordinates'] for _ in ensemble.values()]
 ens_header = [_['header'] for _ in ensemble.values()]
-ens_mols = [rdkitutils.convert_coordinates_to_mols(ele, coords, removeHs=True) for ele, coords in zip(ens_elements, ens_coordinates)]
+ens_mols = [rdkitutils.convert_coordinates_to_mols(ele, coords, removeHs=args.keep_H) for ele, coords in zip(ens_elements, ens_coordinates)]
 
 mol_with_conformers = ens_mols[0]
 for mol in ens_mols[1:]:
