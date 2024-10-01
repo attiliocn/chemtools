@@ -97,7 +97,6 @@ def read_xyz_ensemble(filepath):
         end_line = i + (numAtoms + 2)
         all_molecules.append(ensemble_data[start_line:end_line])
 
-    num_molecules = len(all_molecules)
     parsed_ensemble = dict()
     for i, mol in enumerate(all_molecules):
         molecule_data = dict()
@@ -106,9 +105,9 @@ def read_xyz_ensemble(filepath):
         elements = list()
         coordinates = list()
 
-        for i in cartesian:
-            elements.append(i.split()[0])
-            coordinates.append(i.split()[1:])
+        for j in cartesian:
+            elements.append(j.split()[0])
+            coordinates.append(j.split()[1:])
 
         atomic_numbers = [element_to_Z[element] for element in elements]
 
