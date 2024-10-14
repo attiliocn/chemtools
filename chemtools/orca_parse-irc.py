@@ -30,8 +30,8 @@ for recipe in ts_recipes:
         header=f'TS Geometry E {recipe[1]}'
     )
 
-    rv_trajectory = xyzutils.read_xyz_ensemble(f'{basename}_rv.xyz')
-    fw_trajectory = xyzutils.read_xyz_ensemble(f'{basename}_fw.xyz')
+    rv_trajectory = xyzutils.read_xyz_ensemble(f'{basename}_rv.trj')
+    fw_trajectory = xyzutils.read_xyz_ensemble(f'{basename}_fw.trj')
 
     if recipe[2] == 0:
         # then fw is the trajectory toward reactants
