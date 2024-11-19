@@ -60,10 +60,13 @@ def get_symmetric_substructures(mols:list, maxMatches:int=1000):
                 (shared_mols_name, i, j, {'maxMatches': maxMatches, 'uniquify': False})
             )
     with Pool(processes=os.cpu_count()) as pool:
-        results = pool.map(get_substructure_matches, tasks)
+        matches = []
+        for substructures in pool.imap_unordered(get_substructure_matches, tasks):
+            if len(substructures) > len(matches):
+                matches = substructures
+                print(f'Current substructure count is {len(matches)}')
         shared_memory.ShareableList(name=shared_mols_name).shm.unlink()
 
-    matches = max(results)
     atomMap = []
     for match in matches:
         atomMap.append(list(zip(range(mols[0].GetNumAtoms()), match)))
