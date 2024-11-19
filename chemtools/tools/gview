@@ -19,11 +19,7 @@ except FileNotFoundError:
     os.mkdir(OUTPUT_DIRECTORY)
 
 def identify_file_format(file):
-<<<<<<< HEAD:tools/gview
-    regex_g16 = r'This is part of the Gaussian\(R\) 16 program.'
-=======
     regex_g16 = r'This is part of the Gaussian\(R\) 16 program\.'
->>>>>>> major1:chemtools/tools/gview
     regex_orca5 = r'\* O   R   C   A \*'
     regex_xyz = r'(^ +)?([a-zA-Z]{1,2})([\s\t]+(-?[0-9]+\.[0-9]+))([\s\t]+(-?[0-9]+\.[0-9]+))([\s\t]+(-?[0-9]+\.[0-9]+))'
 
