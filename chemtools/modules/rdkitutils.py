@@ -33,26 +33,38 @@ def get_maximum_substructure_matches(mols, max_matches=1000):
         atomMap.append(list(zip(range(mols[0].GetNumAtoms()), match)))
     return atomMap
 
-# draft implementation of get_msm_paralell 
-# it is not RAM efficient -- will crash easily with large ensembles
+def share_mols_to_ram(mols:list)->str:
+    # convert mols from rdkit format to bytes
+    mols_bytes = [mol.ToBinary() for mol in mols]
+    # share the bytes-converted molecules to RAM
+    mols_shared = shared_memory.ShareableList(mols_bytes) 
+    return mols_shared.shm.name
 
-# def get_substructures(args):
-#     i, j, mols, max_matches = args
-#     substructures = mols[i].GetSubstructMatches(mols[j], uniquify=False, maxMatches=max_matches)
-#     return substructures
-# def get_maximum_substructure_matches_paralell(mols, max_matches=1000):
-#     tasks = [(i, j, mols, max_matches) for i in range(len(mols)) for j in range(i)]
-#     with Pool(processes=os.cpu_count()) as pool:
-#         results = pool.map(get_substructures, tasks)
-#     matches = max(results)
-#     atomMap = []
-#     for match in matches:
-#         atomMap.append(list(zip(range(mols[0].GetNumAtoms()), match)))
-#     return atomMap
+def get_substructure_matches(args):
+    mols_name, i, j,  kwargs = args
+    shared_mols = shared_memory.ShareableList(name=mols_name)
+    substructures = Chem.Mol(shared_mols[i]).GetSubstructMatches(Chem.Mol(shared_mols[j]), **kwargs)
+    shared_mols.shm.close()
+    return substructures
+def get_symmetric_substructures(mols:list, maxMatches:int=1000):
+    # expose the mol list to a shared RAM 
+    shared_mols_name = share_mols_to_ram(mols)
 
-def get_symmetric_substructures(mols:np.array, maxMatches:int=1000):
-    # load mols array to RAM (shared memory)
-    mols_shm = shared_memory.SharedMemory(create=True, size=mols.nbytes)
+    tasks = []
+    for i in range(len(mols)):
+        for j in range(i):
+            tasks.append(
+                (shared_mols_name, i, j, {'maxMatches': maxMatches, 'uniquify': False})
+            )
+    with Pool(processes=os.cpu_count()) as pool:
+        results = pool.map(get_substructure_matches, tasks)
+        shared_memory.ShareableList(name=shared_mols_name).shm.unlink()
+
+    matches = max(results)
+    atomMap = []
+    for match in matches:
+        atomMap.append(list(zip(range(mols[0].GetNumAtoms()), match)))
+    return atomMap
 
 def rmsd(probe_mol,ref_mol,atomMap=None):
     rmsd = rdMolAlign.GetBestRMS(probe_mol, ref_mol, map=atomMap)
