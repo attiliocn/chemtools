@@ -27,7 +27,7 @@ for mol in ens_mols[1:]:
     conformer = mol.GetConformer()
     mol_with_conformers.AddConformer(conformer,assignId=True)
 
-atomMap = rdkitutils.get_maximum_substructure_matches(ens_mols, max_matches=args.max_matches)
+atomMap = rdkitutils.get_symmetric_substructures(ens_mols, maxMatches=args.max_matches)
 conformers_rmsd = rdMolAlign.GetAllConformerBestRMS(
     mol=mol_with_conformers,
     map=atomMap,
