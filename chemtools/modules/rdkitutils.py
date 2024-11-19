@@ -44,7 +44,9 @@ def share_mols_to_ram(mols:list)->str:
 def get_substructure_matches(args):
     mols_name, i, j,  kwargs = args
     shared_mols = shared_memory.ShareableList(name=mols_name)
-    substructures = Chem.Mol(shared_mols[i]).GetSubstructMatches(Chem.Mol(shared_mols[j]), **kwargs)
+    mol_1 = Chem.Mol(shared_mols[i])
+    mol_2 = Chem.Mol(shared_mols[j])
+    substructures = mol_1.GetSubstructMatches(mol_2, **kwargs)
     shared_mols.shm.close()
     return substructures
 def get_symmetric_substructures(mols:list, maxMatches:int=1000):
