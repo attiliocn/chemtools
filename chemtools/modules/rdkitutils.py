@@ -37,7 +37,8 @@ def share_mols_to_ram(mols:list)->str:
     # convert mols from rdkit format to bytes
     mols_bytes = [mol.ToBinary() for mol in mols]
     # share the bytes-converted molecules to RAM
-    mols_shared = shared_memory.ShareableList(mols_bytes) 
+    mols_shared = shared_memory.ShareableList(mols_bytes)
+    print(f"Size of the shared array {mols_shared.shm.size/1e6:.2f} MB")
     return mols_shared.shm.name
 
 def get_substructure_matches(args):
