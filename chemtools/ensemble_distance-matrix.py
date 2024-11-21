@@ -27,7 +27,10 @@ for mol in ens_mols[1:]:
     conformer = mol.GetConformer()
     mol_with_conformers.AddConformer(conformer,assignId=True)
 
+print('Starting atomMap acquisition')
 atomMap = rdkitutils.get_symmetric_substructures(ens_mols, maxMatches=args.max_matches)
+print('Finished atomMap acquisition')
+
 conformers_rmsd = rdMolAlign.GetAllConformerBestRMS(
     mol=mol_with_conformers,
     map=atomMap,
