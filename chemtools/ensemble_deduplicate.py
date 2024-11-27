@@ -9,10 +9,12 @@ import time
 import numpy as np
 from modules import geometry, xyzutils
 
+from scipy.io import mmread
+
 start_time_global = time.time()
 
 parser = argparse.ArgumentParser()
-parser.add_argument('files', nargs='+', help='.csv distance matrix in lower triangular format')
+parser.add_argument('files', nargs='+', help='.mtx distance matrix (expected: sparse lower triangular matrix)')
 parser.add_argument('--threshold', type=float, default=.25, help='RMSD threshold for duplicate detection. Default is 0.25')
 args = parser.parse_args()
 
@@ -26,7 +28,9 @@ for file in args.files:
     basename_updated = f"{basename}_deduplicated.xyz"
     log.write(f"Current file: {basename}\n")
 
-    rmsd_distance_matrix = np.genfromtxt(file, delimiter=",")
+    # rmsd_distance_matrix = np.genfromtxt(file, delimiter=",")
+    rmsd_distance_matrix = mmread(file)
+    rmsd_distance_matrix = rmsd_distance_matrix.toarray()
     numconfs = rmsd_distance_matrix.shape[0]
     to_delete = geometry.get_duplicates_rmsd_matrix(rmsd_distance_matrix, threshold=args.threshold)
     log.write(f"Number of conformers: {numconfs}\n")
