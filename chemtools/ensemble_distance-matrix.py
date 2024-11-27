@@ -6,6 +6,8 @@ import numpy as np
 from rdkit import Chem
 from rdkit.Chem import rdMolAlign
 import os
+from scipy.sparse import coo_matrix
+from scipy.io import mmwrite
 
 parser = argparse.ArgumentParser()
 parser.add_argument('ensemble', help='XYZ Ensemble File')
@@ -44,5 +46,12 @@ for i in range(numconfs):
     for j in range(i):
         rmsd_distance_matrix[i,j] = conformers_rmsd[k]
         k+=1
-np.savetxt(f"{basename}.csv", rmsd_distance_matrix, delimiter=",")
+
+# Write the dense numpy array to a .csv file
+# np.savetxt(f"{basename}.csv", rmsd_distance_matrix, delimiter=",")
+
+# Compress the distance matrix (sparse) and write it to a mtx file
+compressed_mtx = coo_matrix(np.tril(rmsd_distance_matrix.round(3)))
+mmwrite(f"{basename}.mtx", compressed_mtx)
+
 
