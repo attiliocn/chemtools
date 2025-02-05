@@ -63,7 +63,7 @@ def get_symmetric_substructures(mols:list, maxMatches:int=1000):
         matches = []
         results = pool.imap_unordered(get_substructure_matches, tasks)
         counter = 0
-        maxcounter = int(((len(mols)**2)/2)*.10)
+        maxcounter = max(int(((len(mols)**2)/2)*.10),1000)
         print(f'Up to {maxcounter} operations will be performed')
         for substructures in results:
             if counter > maxcounter:
