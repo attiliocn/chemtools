@@ -8,11 +8,12 @@ import numpy as np
 import pandas as pd
 from modules import rdkitutils, xyzutils
 from rdkit import Chem
-from rdkit.Chem import rdMolAlign, rdMolTransforms, rdDetermineBonds
+from rdkit.Chem import rdMolAlign, rdMolTransforms, rdDetermineBonds, rdFMCS
 
 parser = argparse.ArgumentParser()
 parser.add_argument('reference', help='Reference Molecule (XYZ format)')
 parser.add_argument('ensemble', help='Ensemble of molecules (XYZ format)')
+parser.add_argument('--mcs', action='store_true', help='Try to determine the Maximum Common Substructure (MCS) and align molecules using the resulting MCS')
 parser.add_argument('--rmsd-all', action='store_true', help='Use all-atom RMSD calculation. Default is False')
 args = parser.parse_args()
 
@@ -36,6 +37,14 @@ if not args.rmsd_all:
     full_ensemble = [Chem.RemoveAllHs(mol) for mol in full_ensemble]
     for mol in full_ensemble:
         rdDetermineBonds.DetermineConnectivity(mol)
+
+if args.mcs:
+    mcs = rdFMCS.FindMCS(full_ensemble)
+    pattern = Chem.MolFromSmarts(mcs.smartsString)
+    print('MCS was determined using all atoms\n')
+    print(f"MCS has {mcs.numAtoms} atoms\n")
+    print(f"MCS SMARTS Pattern is {mcs.smartsString}\n\n")
+    full_ensemble[0] = Chem.MolFromSmarts(mcs.smartsString)
 
 # get the transformation matrices
 def get_best_align_transf(args):
