@@ -46,8 +46,10 @@ def measure_dihedral_angle(p0,p1,p2,p3):
     return np.degrees(np.arctan2(y, x))
 
 def get_duplicates_rmsd_matrix(matrix, threshold=0.25):
-    analysis = np.logical_and(matrix > 0, matrix <= threshold)
-    to_delete = np.unique(np.where(analysis)[0])
+    all_conformers = np.tril(np.ones_like(matrix, dtype=bool),k=-1) # is a lower triangular matrix of Trues (the main diagonal is set to False)
+    equivalent_conformers = matrix <= threshold
+    delete_conformers_mtx = all_conformers & equivalent_conformers
+    to_delete = np.where(delete_conformers_mtx)[0]
     return to_delete
 
 # warning: the rmsd(args) function  declared below is deprecated
