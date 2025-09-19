@@ -32,7 +32,11 @@ for file in args.files:
     rmsd_distance_matrix = mmread(file)
     rmsd_distance_matrix = rmsd_distance_matrix.toarray()
     numconfs = rmsd_distance_matrix.shape[0]
-    to_delete = geometry.get_duplicates_rmsd_matrix(rmsd_distance_matrix, threshold=args.threshold)
+    to_delete, conformer_relationships = geometry.get_duplicates_rmsd_matrix(
+        rmsd_distance_matrix, 
+        threshold=args.threshold,
+        return_relationships=True
+    )
     log.write(f"Number of conformers: {numconfs}\n")
 
     ensemble = xyzutils.read_xyz_ensemble(f"{basename}.xyz")
@@ -46,6 +50,10 @@ for file in args.files:
 
     log.write(f"Conformers after deduplication: {len(_coordinates)}\n")
     log.write(f"{numconfs - len(_coordinates)} conformers were deleted\n")
+
+    for k,v in conformer_relationships.items():
+        log.write(f'Conformer {k+1} will be kept. It is similar to {','.join([str(i+1) for i in v])}\n')
+
     log.write(f"{len(_coordinates)} conformers will be written to {basename_updated}\n")
     end_time = time.time()
     elapsed_time = end_time - start_time
