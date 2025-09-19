@@ -45,12 +45,24 @@ def measure_dihedral_angle(p0,p1,p2,p3):
     y = np.dot(np.cross(b1, v), w)
     return np.degrees(np.arctan2(y, x))
 
-def get_duplicates_rmsd_matrix(matrix, threshold=0.25):
+def get_duplicates_rmsd_matrix(matrix, threshold=0.25, return_relationships=False):
     all_conformers = np.tril(np.ones_like(matrix, dtype=bool),k=-1) # is a lower triangular matrix of Trues (the main diagonal is set to False)
     equivalent_conformers = matrix <= threshold
     delete_conformers_mtx = all_conformers & equivalent_conformers
-    to_delete = np.where(delete_conformers_mtx)[0]
-    return to_delete
+    delete_idx = np.where(delete_conformers_mtx)
+    to_delete = delete_idx[0]
+
+    conformers_relationships = dict()
+    for conf_id in range(matrix.shape[0]):
+        conformer_data = delete_conformers_mtx[:, conf_id]
+        similar_conformers = np.where(conformer_data)[0].tolist()
+        if len(similar_conformers) != 0:
+            conformers_relationships[conf_id] = similar_conformers
+
+    if return_relationships:
+        return to_delete, conformers_relationships
+    else:
+        return to_delete
 
 # warning: the rmsd(args) function  declared below is deprecated
 # # also, all distance matrix acquisition functions in this
