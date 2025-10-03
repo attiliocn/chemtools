@@ -52,7 +52,8 @@ for file in args.files:
     log.write(f"{numconfs - len(_coordinates)} conformers were deleted\n")
 
     for k,v in conformer_relationships.items():
-        log.write(f'Conformer {k+1} will be kept. It is similar to {','.join([str(i+1) for i in v])}\n')
+        if k not in to_delete:
+            log.write(f'Conformer {k+1} will be kept. It is similar to {','.join([str(i+1) for i in v])}\n')
 
     log.write(f"{len(_coordinates)} conformers will be written to {basename_updated}\n")
     end_time = time.time()
