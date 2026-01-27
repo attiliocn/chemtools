@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 
 import re
-from scipy.constants import physical_constants, Avogadro, calorie
+
+import pandas as pd
+from scipy.constants import Avogadro, calorie, physical_constants
 
 regex_patterns = {
     'bond energy': re.compile(r"Bond Energy +(\-?[0-9]+\.[0-9]+)"),
@@ -48,9 +50,11 @@ if __name__ == '__main__':
     for file in args.files:
         eda_parsed_files[file] = extract_orca_energy_decomposition_analysis(file)
 
-    with open('eda_energies.csv', mode='w') as f:
-        f.write(f'filename,{','.join(regex_patterns.keys())}\n')
-        for k,v in eda_parsed_files.items():
-            sorted_v = {s:v[s]*HARTREE_TO_KCALMOL for s in regex_patterns.keys()}
-            sorted_v['smd cds'] = sorted_v['smd cds'] / HARTREE_TO_KCALMOL
-            f.write(f'./{k},{','.join(str(s) for s in sorted_v.values())}\n')
+    eda_parsed_table = pd.DataFrame(eda_parsed_files).T
+    eda_parsed_table.index.name = 'filename'
+    eda_parsed_table *= HARTREE_TO_KCALMOL
+
+    if 'smd cds' in eda_parsed_table.columns:
+        eda_parsed_table['smd cds'] /= HARTREE_TO_KCALMOL
+
+    eda_parsed_table.to_csv('eda_energies.csv')
