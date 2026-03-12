@@ -65,6 +65,18 @@ for recipe in ts_recipes:
     else:
         fw_endpoint_geometry = None
 
+    # UPDATE 2026
+    # Check if the downhill trajectories are present and renamed by PRODUCT (P) and REACTANT (R)
+    if os.path.exists(f'downhill/{basename}_R.trj'):
+        reactant_downhill_trajectory = xyzutils.read_xyz_ensemble(f'downhill/{basename}_R.trj')
+    else:
+        reactant_downhill_trajectory = None
+    if os.path.exists(f'downhill/{basename}_P.trj'):
+        product_downhill_trajectory = xyzutils.read_xyz_ensemble(f'downhill/{basename}_P.trj')
+    else:        
+        product_downhill_trajectory = None
+
+
     if recipe[2] == 0:
         # then fw is the trajectory toward reactants
         # fw trajectory must be reversed
@@ -72,6 +84,10 @@ for recipe in ts_recipes:
         with open(f'{basename}.irc', mode='w') as f:
             if fw_endpoint_geometry:
                 f.write(fw_endpoint_geometry[0]['stringContent'])
+
+            if reactant_downhill_trajectory:
+                for mol_id in list(reactant_downhill_trajectory.keys())[:0:-1]:
+                    f.write(reactant_downhill_trajectory[mol_id]['stringContent'])
 
             if fw_downhill_trajectory:
                 for mol_id in list(fw_downhill_trajectory.keys())[:0:-1]:
@@ -84,6 +100,11 @@ for recipe in ts_recipes:
             
             for mol_id in list(rv_trajectory.keys()):
                 f.write(rv_trajectory[mol_id]['stringContent'])
+
+            if product_downhill_trajectory:
+                for mol_id in list(product_downhill_trajectory.keys())[1:]:
+                    f.write(product_downhill_trajectory[mol_id]['stringContent'])
+
 
             if rv_downhill_trajectory:
                 for mol_id in list(rv_downhill_trajectory.keys())[1:]:
@@ -101,6 +122,10 @@ for recipe in ts_recipes:
             if rv_endpoint_geometry:
                 f.write(rv_endpoint_geometry[0]['stringContent'])
 
+            if reactant_downhill_trajectory:
+                for mol_id in list(reactant_downhill_trajectory.keys())[:0:-1]:
+                    f.write(reactant_downhill_trajectory[mol_id]['stringContent'])
+
             if rv_downhill_trajectory:
                 for mol_id in list(rv_downhill_trajectory.keys())[:0:-1]:
                     f.write(rv_downhill_trajectory[mol_id]['stringContent'])
@@ -112,6 +137,10 @@ for recipe in ts_recipes:
 
             for mol_id in list(fw_trajectory.keys()):
                 f.write(fw_trajectory[mol_id]['stringContent'])
+            
+            if product_downhill_trajectory:
+                for mol_id in list(product_downhill_trajectory.keys())[1:]:
+                    f.write(product_downhill_trajectory[mol_id]['stringContent'])
 
             if fw_downhill_trajectory:
                 for mol_id in list(fw_downhill_trajectory.keys())[1:]:
