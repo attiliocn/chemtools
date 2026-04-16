@@ -13,6 +13,19 @@ regex_patterns_504 = {
     'E(el) cbs': re.compile(r'Estimated CBS total energy \(3/4\) : +(\-?[0-9]+\.[0-9]+)')
 }
 
+# ORCA 504 Patterns for Direct Extraction (no extrapolation)
+regex_patterns_504_direct = {
+    'Singles Norm': re.compile(r'Singles Norm \<S\|S\>\*\*1\/2 +\.\.\. +(\-?[0-9]+\.[0-9]+)'),
+    'T1 diagnostic': re.compile(r'T1 diagnostic +\.\.\. +(\-?[0-9]+\.[0-9]+)'),
+    'E(0)': re.compile(r'E\(0\) +\.\.\. +(\-?[0-9]+\.[0-9]+)'),
+    'E(CORR)(strong-pairs)': re.compile(r'E\(CORR\)\(strong-pairs\) +\.\.\. +(\-?[0-9]+\.[0-9]+)'),
+    'E(CORR)(weak-pairs)': re.compile(r'E\(CORR\)\(weak-pairs\) +\.\.\. +(\-?[0-9]+\.[0-9]+)'),
+    'Triples Correction (T)': re.compile(r'Triples Correction \(T\) +\.\.\. +(\-?[0-9]+\.[0-9]+)'),
+    'Final correlation energy': re.compile(r'Final correlation energy +\.\.\. +(\-?[0-9]+\.[0-9]+)'),
+    'E(CCSD)': re.compile(r'E\(CCSD\) +\.\.\. +(\-?[0-9]+\.[0-9]+)'),
+    'E(CCSD(T))': re.compile(r'E\(CCSD\(T\)\) +\.\.\. +(\-?[0-9]+\.[0-9]+)'),
+}
+
 # ORCA 611 PATTERNS
 regex_patterns_611 = {
     'scf tzvpp': re.compile(r'SCF energy with basis +def2-TZVPP: +(\-?[0-9]+\.[0-9]+)'),
@@ -29,8 +42,6 @@ def extract_orca_extrapolate(filepath: str) -> dict:
         parsed_energies = dict()
         for line in f:
             for name, pattern in regex_patterns.items():
-                if name in parsed_energies.keys():
-                    continue
                 match = pattern.search(line)
                 if match:
                     parsed_energies[name] = float(match.group(1))
@@ -44,12 +55,18 @@ if __name__ == '__main__':
     )
     parser.add_argument('files', nargs='+', help='ORCA output files')
     parser.add_argument('--version', choices=['504', '611'], default='611', help='ORCA version (default: 611)')
+    parser.add_argument('--mode', choices=['extrapolate', 'direct'], default='extrapolate', help='Extraction mode: extrapolate (default) or direct (no extrapolation, extract the raw energy values from a DLPNO-CCSD(T) calculation)')
     args = parser.parse_args()
 
-    if args.version == '504':
-        regex_patterns = regex_patterns_504
-    else:        
-        regex_patterns = regex_patterns_611
+    if args.mode == 'direct':
+        if args.version != '504':
+            raise ValueError('Direct extraction mode is only supported for ORCA 5.0.4')
+        regex_patterns = regex_patterns_504_direct
+    else:
+        if args.version == '504':
+            regex_patterns = regex_patterns_504
+        elif args.version == '611':        
+            regex_patterns = regex_patterns_611
 
     cbs_parsed_files = {}
     for file in args.files:
