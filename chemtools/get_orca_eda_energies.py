@@ -13,7 +13,7 @@ regex_patterns = {
     'delta E0(XC)': re.compile(r"Delta E\^0\(XC\) +(\-?[0-9]+\.[0-9]+)"),
     'delta dispersion': re.compile(r"Delta Dispersion +(\-?[0-9]+\.[0-9]+)"),
     'delta cpcm dieletric': re.compile(r"Delta CPCM Dielectric +(\-?[0-9]+\.[0-9]+)"),
-    'smd cds': re.compile(r"SMD CDS free energy correction energy : +(\-?[0-9]+\.[0-9]+)")
+    'smd cds': re.compile(r"Delta SMD CDS correction +(\-?[0-9]+\.[0-9]+)")
 }
 
 HARTREE_TO_KCALMOL = physical_constants["Hartree energy"][0] * Avogadro / (1000 * calorie)
@@ -22,7 +22,7 @@ f'''
 All energies(*) are extracted from the output file in Hartree (Eh) and converted 
 to kcal/mol using the conversion factor 1 Eh = {HARTREE_TO_KCALMOL} kcal/mol
 
-(*) Except for the SMD CDS free energy correction -- this is extracted in kcal/mol'''
+'''
 )
 
 def extract_orca_energy_decomposition_analysis(filepath: str) -> dict:
@@ -53,8 +53,5 @@ if __name__ == '__main__':
     eda_parsed_table = pd.DataFrame(eda_parsed_files).T
     eda_parsed_table.index.name = 'filename'
     eda_parsed_table *= HARTREE_TO_KCALMOL
-
-    if 'smd cds' in eda_parsed_table.columns:
-        eda_parsed_table['smd cds'] /= HARTREE_TO_KCALMOL
 
     eda_parsed_table.to_csv('eda_energies.csv')
