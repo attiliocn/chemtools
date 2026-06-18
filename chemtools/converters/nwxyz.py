@@ -61,7 +61,7 @@ def parse_file(lines):
 
         if is_angstrom or is_au:
             block_start = i
-            i += 3  # skip "No. Tag Charge X Y Z" and "---- ..."
+            i += 4  # skip blank line, "No. Tag Charge X Y Z", and "---- ..."
             atoms = []
             while i < len(lines):
                 m = ATOM_RE.match(lines[i])
