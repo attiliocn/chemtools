@@ -24,6 +24,7 @@ regex_patterns = {
     # 1. Total DFT energy (au). May appear multiple times -> keep LAST occurrence.
     'Total DFT energy': re.compile(
         r'Total DFT energy\s*=\s*(-?[0-9]+\.[0-9]+)'),
+        # r'Total xTB energy\s*=\s*(-?[0-9]+\.[0-9]+)'), # TODO: Fix workaround
 
     # 2. Temperature (K)
     'Temperature': re.compile(
